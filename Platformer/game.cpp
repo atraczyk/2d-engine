@@ -1001,7 +1001,7 @@ void P_cleanup()
 	glDeleteProgram(game.shaders.sky);
 }
 
-void R_DrawBox(float x, float y, float w, float h, Vector4 color)
+void R_drawBox(float x, float y, float w, float h, Vector4 color)
 {
 	glDisable(GL_TEXTURE_2D);
 	glColor4f(color.x, color.y, color.z, color.w);
@@ -1026,7 +1026,7 @@ void R_drawScreenDebug()
 	int w = 340;
 	int h = 200;
 	Vector4 bgcolor(0.1f, 0.1f, 0.1f, 0.75f);
-	R_DrawBox( x,  y,  w,  h, bgcolor);
+	R_drawBox( x,  y,  w,  h, bgcolor);
 
 	DEVMODE dm;
 	EnumDisplaySettings (NULL, ENUM_CURRENT_SETTINGS, &dm);
@@ -1035,49 +1035,49 @@ void R_drawScreenDebug()
 	Vector4 color;
 
 	int ty = y + 8; int dy = font.charsXYWH.h * font.scaleValue;
-	//R_DrawBox( x,  ty - dy,  w,  dy, bgcolor);
+	//R_drawBox( x,  ty - dy,  w,  dy, bgcolor);
 	color = Vector4(1.0f,1.0f,1.0f,1.0f);
-	//R_DrawBox( x,  ty,  w,  dy, bgcolor);
+	//R_drawBox( x,  ty,  w,  dy, bgcolor);
 	sprintf (buffer, "time.fps   = %0.2f", time.fps);
 	ty += dy; font.displayScreenText(x + 8,ty,color.x,color.y,color.z,buffer);
-	//R_DrawBox( x,  ty,  w,  dy, bgcolor);
+	//R_drawBox( x,  ty,  w,  dy, bgcolor);
 	sprintf (buffer, "time.currentFrame = %d", time.currentFrame);
 	ty += dy; font.displayScreenText(x + 8,ty,color.x,color.y,color.z,buffer);
-	//R_DrawBox( x,  ty,  w,  dy, bgcolor);
+	//R_drawBox( x,  ty,  w,  dy, bgcolor);
 	sprintf (buffer, "ttime = %0.4f", (time.getCurrentMilliseconds()/1000.0f) - time.startTime);
 	ty += dy; font.displayScreenText(x + 8,ty,color.x,color.y,color.z,buffer);
-	//R_DrawBox( x,  ty,  w,  dy, bgcolor);
+	//R_drawBox( x,  ty,  w,  dy, bgcolor);
 	sprintf (buffer, "gtime = %0.4f", time.gameTime);
 	ty += dy; font.displayScreenText(x + 8,ty,color.x,color.y,color.z,buffer);
-	//R_DrawBox( x,  ty,  w,  dy, bgcolor);
+	//R_drawBox( x,  ty,  w,  dy, bgcolor);
 	sprintf (buffer, "ptime = %0.4f", time.pauseTime);
 	ty += dy; font.displayScreenText(x + 8,ty,color.x,color.y,color.z,buffer);
-	//R_DrawBox( x,  ty,  w,  dy, bgcolor);
+	//R_drawBox( x,  ty,  w,  dy, bgcolor);
 	sprintf (buffer, "mstime = %0.4f", time.moveSizeTime);
 	ty += dy; font.displayScreenText(x + 8,ty,color.x,color.y,color.z,buffer);
 
 	color = Vector4(1.0f,0.25f,0.0f,1.0f);
-	//R_DrawBox( x,  ty,  w,  dy, bgcolor);
+	//R_drawBox( x,  ty,  w,  dy, bgcolor);
 	sprintf (buffer, "mastervol  = %0.2f", sound.masterVolume);
 	ty += dy; font.displayScreenText(x + 8,ty,color.x,color.y,color.z,buffer);
-	//R_DrawBox( x,  ty,  w,  dy, bgcolor);
+	//R_drawBox( x,  ty,  w,  dy, bgcolor);
 	sprintf (buffer, "music  = %0.2f", sound.musicVolume);
 	ty += dy; font.displayScreenText(x + 8,ty,color.x,color.y,color.z,buffer);
-	//R_DrawBox( x,  ty,  w,  dy, bgcolor);
+	//R_drawBox( x,  ty,  w,  dy, bgcolor);
 	sprintf (buffer, "sfx  = %0.2f", sound.sfxVolume);
 	ty += dy; font.displayScreenText(x + 8,ty,color.x,color.y,color.z,buffer);
-	//R_DrawBox( x,  ty,  w,  dy, bgcolor);
+	//R_drawBox( x,  ty,  w,  dy, bgcolor);
 	sprintf (buffer, "cantsfx  = %d", sound.cantPlaySfxSound);
 	ty += dy; font.displayScreenText(x + 8,ty,color.x,color.y,color.z,buffer);
-	//R_DrawBox( x,  ty,  w,  dy, bgcolor);
+	//R_drawBox( x,  ty,  w,  dy, bgcolor);
 	sprintf (buffer, "cantguisfx  = %d", sound.cantPlayGUISound);
 	ty += dy; font.displayScreenText(x + 8,ty,color.x,color.y,color.z,buffer);
 
 	color = Vector4(1.0f,0.75f,0.25f,1.0f);
-	//R_DrawBox( x,  ty,  w,  dy, bgcolor);
+	//R_drawBox( x,  ty,  w,  dy, bgcolor);
 	sprintf (buffer, "native = %dx%dx%dbit %dHz", dm.dmPelsWidth, dm.dmPelsHeight, dm.dmBitsPerPel, dm.dmDisplayFrequency);
 	ty += dy; font.displayScreenText(x + 8,ty,color.x,color.y,color.z,buffer);
-	//R_DrawBox( x,  ty,  w,  dy, bgcolor);
+	//R_drawBox( x,  ty,  w,  dy, bgcolor);
 	sprintf (buffer, "game.clientRect = %d x %d", (int)game.clientRect.w,(int)game.clientRect.h);
 	ty += dy; font.displayScreenText(x + 8,ty,color.x,color.y,color.z,buffer);
 	

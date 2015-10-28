@@ -1157,24 +1157,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			switch(LOWORD(wParam))
 			{
-			case ID_RED:
-				{
-
-				} 
-				break;
-
-			case ID_GREEN:
-				{
-
-				} 
-				break;
-
-			case ID_BLUE:
-				{
-
-				} 
-				break;
-
 			case ID_EXIT:
 				{
 					PostQuitMessage( 0 );

@@ -1,8 +1,8 @@
 //-----------------------------------------------------------------------------
-//	2d platform game engine and level editor by Andreas Traczyk (2014-15) 
-//	http://andreastraczyk.com/	email: andreastraczyk@gmail.com
+//  2d platform game engine and level editor by Andreas Traczyk (2014-15)
+//  http://andreastraczyk.com/  email: andreastraczyk@gmail.com
 //
-//	DESCRIPTION:	camera class 
+//  DESCRIPTION:    camera class
 //-----------------------------------------------------------------------------
 
 #ifndef CAMERA_H
@@ -21,21 +21,20 @@
 class Camera : public MovingObject
 {
 public:
-	Point			toMove;
-	float			aspect;
-	bool			isTargeting;
-	MovingObject*	pTarget;
-	float			scaleValue;
+    Point           toMove;
+    float           aspect;
+    bool            isTargeting;
+    MovingObject*   pTarget;
+    float           scaleValue;
 
-	Camera();
-	~Camera();
+    Camera();
+    ~Camera();
 
-	void reshape(float w, float h);
-	void moveToTarget();
-	void initialize(int x, int y, int width, int height);
-	void setOrthoMatrix();
-	void update(WorldRect* pconstraints);
-
+    void reshape(float w, float h);
+    void moveToTarget();
+    void initialize(int x, int y, int width, int height);
+    void setOrthoMatrix();
+    void update(WorldRect* pconstraints);
 };
 
 #endif

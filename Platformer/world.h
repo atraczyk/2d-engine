@@ -1,8 +1,8 @@
 //-----------------------------------------------------------------------------
-//	2d platform game engine and level editor by Andreas Traczyk (2014-15) 
-//	http://andreastraczyk.com/	email: andreastraczyk@gmail.com
+//  2d platform game engine and level editor by Andreas Traczyk (2014-15)
+//  http://andreastraczyk.com/  email: andreastraczyk@gmail.com
 //
-//	DESCRIPTION:	containers.
+//  DESCRIPTION:    containers.
 //-----------------------------------------------------------------------------
 
 #pragma once
@@ -15,49 +15,48 @@
 
 struct EnemySpawn
 {
-	int		type;
-	Vector2 position;
-	int		direction;
+    Vector2 position;
+    int     type;
+    int     direction;
 };
 
 struct PlayerSpawn
 {
-	Vector2 position;
-	int		type;
-	int		direction;
+    Vector2 position;
+    int     type;
+    int     direction;
 };
 
 struct DynamicObject
 {
-	Vector2 position;
-	int		type;
-	int		direction;
+    Vector2 position;
+    int     type;
+    int     direction;
 };
 
 class Level
 {
 public:
-	TileMap					layer[NUM_LAYERS];
-	DynamicTileMapList		dynTileMaps;
-	std::vector<EnemySpawn> enemySpawns;
-	float					ambientLighting;
-	PlayerSpawn				playerSpawn;
-	int						musicID;
-	int						reverb;
+    TileMap                 layer[NUM_LAYERS];
+    DynamicTileMapList      dynTileMaps;
+    std::vector<EnemySpawn> enemySpawns;
+    float                   ambientLighting;
+    PlayerSpawn             playerSpawn;
+    int                     musicID;
+    int                     reverb;
 
-	void					initializeLevel();
+    void                    initializeLevel();
 };
 
 class World
 {
 public:
-	Level					level;
-	WorldRect				constraints;
-	std::vector<Enemy>		enemies;
-	Vector2					gravity;
+    Level                   level;
+    WorldRect               constraints;
+    std::vector<Enemy>      enemies;
+    Vector2                 gravity;
 
-	void					loadLevel(const char* filename, Camera* camera);
-	void					loadTextureAtlas(const char* filename);
-	void					update();
+    void                    loadLevel(const char* filename, Camera* camera);
+    void                    loadTextureAtlas(const char* filename);
+    void                    update();
 };
-

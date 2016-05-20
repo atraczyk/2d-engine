@@ -1,8 +1,8 @@
 //-----------------------------------------------------------------------------
-//	2d platform game engine and level editor by Andreas Traczyk (2014-15) 
-//	http://andreastraczyk.com/	email: andreastraczyk@gmail.com
+//  2d platform game engine and level editor by Andreas Traczyk (2014-15)
+//  http://andreastraczyk.com/  email: andreastraczyk@gmail.com
 //
-//	DESCRIPTION:	2d object roots 
+//  DESCRIPTION:    2d object roots
 //-----------------------------------------------------------------------------
 
 #ifndef OBJECTS_H
@@ -13,26 +13,24 @@
 class StaticObject
 {
 public:
-	Vector2 position;
-	Vector2 size;
+    Vector2 position;
+    Vector2 size;
 
-	StaticObject(	Vector2 _position = Vector2(0,0), 
-					Vector2 _size = Vector2(0,0));
-	~StaticObject();
-
+    StaticObject(Vector2 _position = Vector2(0, 0),
+        Vector2 _size = Vector2(0, 0));
+    ~StaticObject();
 };
 
 class MovingObject : public StaticObject
 {
 public:
-	Vector2 lastPosition;
-	Vector2 lastVelocity;
-	Vector2 velocity;
+    Vector2 lastPosition;
+    Vector2 lastVelocity;
+    Vector2 velocity;
 
-	MovingObject(	Vector2 _position = Vector2(0,0), 
-					Vector2 _size = Vector2(0,0));
-	~MovingObject();
-
+    MovingObject(Vector2 _position = Vector2(0, 0),
+        Vector2 _size = Vector2(0, 0));
+    ~MovingObject();
 };
 
 #endif

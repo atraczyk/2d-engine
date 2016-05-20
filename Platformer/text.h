@@ -1,8 +1,8 @@
 //-----------------------------------------------------------------------------
-//	2d platform game engine and level editor by Andreas Traczyk (2014-15) 
-//	http://andreastraczyk.com/	email: andreastraczyk@gmail.com
+//  2d platform game engine and level editor by Andreas Traczyk (2014-15)
+//  http://andreastraczyk.com/  email: andreastraczyk@gmail.com
 //
-//	DESCRIPTION:	text/character drawing utilites for opengl
+//  DESCRIPTION:    text/character drawing utilites for opengl
 //-----------------------------------------------------------------------------
 
 #ifndef TEXT_H
@@ -22,24 +22,24 @@
 class Font
 {
 public:
-	ScreenRect charsXYWH;
-	Camera* pcamera;
-	ScreenRect* pscreen;
-	TileAtlas* atlas;
+    ScreenRect charsXYWH;
+    Camera* pcamera;
+    ScreenRect* pscreen;
+    TileAtlas* atlas;
 
-	float  scaleValue;
-			
-	Font();
-	~Font();
+    float  scaleValue;
 
-	void initialize(int charsWide, int charsHigh, int charWidth, int charHeight,
-				 float Scale, Camera* pCamera, ScreenRect* pScreen, TileAtlas* ptexatlas);
-	void displayText(float x, float y,  float w, float h, 
-					float r, float g, float b, const char *string);
-	void displayTextNoSpacing(float x, float y, float w, float h, 
-					   float r, float g, float b, const char *string);
-	void displayScreenText(int x, int y, float r, float g, float b, const char *string);
-	void BitmapCharacter(float x, float y, float w, float h, int character);
+    Font();
+    ~Font();
+
+    void initialize(int charsWide, int charsHigh, int charWidth, int charHeight,
+        float Scale, Camera* pCamera, ScreenRect* pScreen, TileAtlas* ptexatlas);
+    void displayText(float x, float y, float w, float h,
+        float r, float g, float b, const char *string);
+    void displayTextNoSpacing(float x, float y, float w, float h,
+        float r, float g, float b, const char *string);
+    void displayScreenText(int x, int y, float r, float g, float b, const char *string);
+    void BitmapCharacter(float x, float y, float w, float h, int character);
 };
 
 void InitSpacings();

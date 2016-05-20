@@ -1,8 +1,8 @@
 //-----------------------------------------------------------------------------
-//	2d platform game engine and level editor by Andreas Traczyk (2014-15) GPL
-//	http://andreastraczyk.com/	email: andreastraczyk@gmail.com
+//  2d platform game engine and level editor by Andreas Traczyk (2014-15) GPL
+//  http://andreastraczyk.com/  email: andreastraczyk@gmail.com
 //
-//	DESCRIPTION:	menus and items
+//  DESCRIPTION:    menus and items
 //-----------------------------------------------------------------------------
 
 #ifndef MENU_H
@@ -13,34 +13,34 @@
 #include "objects.h"
 #include "point.h"
 
-#define		BOOLTOSTRING(x)			x?"on":"off"
+#define     BOOLTOSTRING(x)         x?"on":"off"
 
 class MenuItem
 {
 public:
-	float	x, y, w, h;
-	char*	name;
-	void	(*function)();
-	bool*	boolValue;
-	bool	isSlider;
-	float*  floatValue;
-	
-	MenuItem();
-	MenuItem(float _x,float _y, bool is_slider, char* _name,void (*_function)());
-	~MenuItem(){};
+    float   x, y, w, h;
+    char*   name;
+    void(*function)();
+    bool*   boolValue;
+    bool    isSlider;
+    float*  floatValue;
+
+    MenuItem();
+    MenuItem(float _x, float _y, bool is_slider, char* _name, void(*_function)());
+    ~MenuItem() {};
 };
 
 class MenuList
 {
 public:
-	std::vector<MenuItem> items;
-	char* name;
+    std::vector<MenuItem> items;
+    char* name;
 
-	MenuList();
-	MenuList(char* listname);
-	~MenuList(){};
+    MenuList();
+    MenuList(char* listname);
+    ~MenuList() {};
 
-	void addItem(float _x, float _y, bool is_slider, char* _name, void (*_function)());
+    void addItem(float _x, float _y, bool is_slider, char* _name, void(*_function)());
 };
 
 #endif

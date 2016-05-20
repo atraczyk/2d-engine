@@ -1,8 +1,8 @@
 //-----------------------------------------------------------------------------
-//	2d platform game engine and level editor by Andreas Traczyk (2014-15) GPL
-//	http://andreastraczyk.com/	email: andreastraczyk@gmail.com
+//  2d platform game engine and level editor by Andreas Traczyk (2014-15) GPL
+//  http://andreastraczyk.com/  email: andreastraczyk@gmail.com
 //
-//	DESCRIPTION:	load texture functions and atlas class
+//  DESCRIPTION:    load texture functions and atlas class
 //-----------------------------------------------------------------------------
 
 #ifndef TEXTURE_H
@@ -19,22 +19,22 @@
 class TileAtlas
 {
 public:
-	unsigned int* texture;
-	int totalFrames;
-	Point frames;
-	Point imageSize;
-	Point imageFrameSize;
-	Vector2 texel;
-	Vector2 textureFrameSize;
-	ScreenRect* sourceRectangles;
+    unsigned int* texture;
+    int totalFrames;
+    Point frames;
+    Point imageSize;
+    Point imageFrameSize;
+    Vector2 texel;
+    Vector2 textureFrameSize;
+    ScreenRect* sourceRectangles;
 
-	TileAtlas();
-	~TileAtlas();
+    TileAtlas();
+    ~TileAtlas();
 
-	void initialize(unsigned int* ptex, int frames_wide, int frames_high, int frame_width, int frame_height);
+    void initialize(unsigned int* ptex, int frames_wide, int frames_high, int frame_width, int frame_height);
 };
 
-unsigned int	loadBMPTexture_ARGB( const char * filename);
-unsigned char*	loadTextureARGBfromfile(const char * filename, int& w, int& h);
+unsigned int    loadBMPTexture_ARGB(const char * filename);
+unsigned char*  loadTextureARGBfromfile(const char * filename, int& w, int& h);
 
 #endif

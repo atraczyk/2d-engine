@@ -1,8 +1,8 @@
 //-----------------------------------------------------------------------------
-//	2d platform game engine and level editor by Andreas Traczyk (2014-15) 
-//	http://andreastraczyk.com/	email: andreastraczyk@gmail.com
+//  2d platform game engine and level editor by Andreas Traczyk (2014-15)
+//  http://andreastraczyk.com/  email: andreastraczyk@gmail.com
 //
-//	DESCRIPTION:	frame buffer object encapsulation and rendering funcs
+//  DESCRIPTION:    frame buffer object encapsulation and rendering funcs
 //-----------------------------------------------------------------------------
 
 #ifndef RENDERTARGET_H
@@ -17,20 +17,20 @@
 class RenderTarget
 {
 public:
-	int width;
-	int height;
-	bool hasdepthbuffer;
-	unsigned int fbo;
-	unsigned int rbo_depth;
-	unsigned int fbo_texture;
+    int width;
+    int height;
+    bool hasdepthbuffer;
+    unsigned int fbo;
+    unsigned int rbo_depth;
+    unsigned int fbo_texture;
 
-	RenderTarget(){};
-	~RenderTarget(){};
+    RenderTarget() {};
+    ~RenderTarget() {};
 
-	void Create(int w, int h, bool hasdepth);
-	void Clear(float r, float g, float b, float a);
-	void Resize(int w, int h);
-	void Delete();
+    void Create(int w, int h, bool hasdepth);
+    void Clear(float r, float g, float b, float a);
+    void Resize(int w, int h);
+    void Delete();
 };
 
 void DrawFullscreenQuad(RenderTarget dst, RenderTarget src, unsigned int shader);

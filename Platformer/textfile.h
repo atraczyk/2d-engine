@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-//	2d platform game engine and level editor by Andreas Traczyk (2014-15) 
+//	2d platform game engine and level editor by Andreas Traczyk (2014-15)
 //	http://andreastraczyk.com/	email: andreastraczyk@gmail.com
 //
 //	DESCRIPTION:	text file utilites

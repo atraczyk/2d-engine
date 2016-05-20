@@ -49,7 +49,8 @@ public:
     Collision(Vector2 mtd = Vector2(0, 0), float sa = 0,
         bool lc = false, bool rc = false, bool bc = false, bool tc = false,
         bool lsc = false, bool rsc = false, float _x = 0, float _y = 0,
-        unsigned short Flags = 0x00, bool cxir = false, int index = 0, Vector2 vel = Vector2(0, 0))
+        unsigned short Flags = 0x00, bool cxir = false, int index = 0,
+        Vector2 vel = Vector2(0, 0))
     {
         area = sa;
         minimumTranslation = mtd;

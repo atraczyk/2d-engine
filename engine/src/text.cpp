@@ -34,7 +34,7 @@ void Font::displayText(float x, float y, float w, float h,
 {
     float w_x = x;
     float w_y = y + h;
-    int length = strlen(string);
+    int length = static_cast<int>(strlen(string));
 
     float ds = w / 8.0f;
 
@@ -53,7 +53,7 @@ void Font::displayTextNoSpacing(float x, float y, float w, float h,
 {
     float w_x = x;
     float w_y = y + h;
-    int length = strlen(string);
+    int length = static_cast<int>(strlen(string));
 
     float ds = w / 8.0f;
 
@@ -72,7 +72,7 @@ void Font::displayScreenText(int x, int y, float r, float g, float b, const char
     float w = charsXYWH.w * scaleValue;
     float h = charsXYWH.h * scaleValue;
 
-    int length = strlen(string);
+    int length = static_cast<int>(strlen(string));
 
     glBindTexture(GL_TEXTURE_2D, *(atlas->texture));
     glColor4f(r, g, b, 1.0f);
@@ -108,14 +108,14 @@ void InitSpacings()
         s_spacing[i] = -1;
     }
     string = "il.,";
-    length = strlen(string);
+    length = static_cast<int>(strlen(string));
     for (i = 0; i < length; i++)
     {
         w_spacing[string[i]] = -24;
         s_spacing[string[i]] = -3;
     }
     string = "ft";
-    length = strlen(string);
+    length = static_cast<int>(strlen(string));
     for (i = 0; i < length; i++)
     {
         w_spacing[string[i]] = -16;

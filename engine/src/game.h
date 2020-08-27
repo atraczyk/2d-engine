@@ -9,7 +9,7 @@
 #define GAME_H
 
 #include <windows.h>
-#include <GL\glew.h>
+#include <GL/glew.h>
 #include <stdio.h>
 #include <fstream>
 #include <sstream>
@@ -119,6 +119,7 @@ public:
     {
         unsigned int    sprites;
         unsigned int    tiles;
+        unsigned int    abgs;
         unsigned int    bgs;
         unsigned int    font;
         unsigned int    light;
@@ -131,6 +132,7 @@ public:
         SpriteAtlas test;
         TileAtlas   sprites;
         TileAtlas   tiles;
+        TileAtlas   abgs;
         TileAtlas   bgs;
         TileAtlas   font;
     } atlases;

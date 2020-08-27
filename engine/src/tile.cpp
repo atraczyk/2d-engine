@@ -120,7 +120,10 @@ void TileMap::load(const char* filename, TileAtlas* ptexatlas, Camera* pcamera)
             }
             row++;
         }
-        t_mapSize = Point(imageLayer.size(), imageLayer[0].size());
+        t_mapSize = Point(
+            static_cast<int>(imageLayer.size()),
+            static_cast<int>(imageLayer[0].size())
+        );
 
         if (has_c_Map)
         {
@@ -139,7 +142,10 @@ void TileMap::load(const char* filename, TileAtlas* ptexatlas, Camera* pcamera)
                     collisionLayer.back().push_back(CTile(index, (index != 0), entry_type[index], NULL));
                 }
             }
-            t_cmapSize = Point(collisionLayer.size(), collisionLayer[0].size());
+            t_cmapSize = Point(
+                static_cast<int>(collisionLayer.size()),
+                static_cast<int>(collisionLayer[0].size())
+            );
         }
         file.close();
     }

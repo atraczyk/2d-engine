@@ -116,21 +116,7 @@ void G_loadLevel(const char* file)
     player.hitEnemy = 0;
     player.health = 2;
 
-    switch(world.level.reverb)
-    {
-    case 0:
-        {
-            FMOD_REVERB_PROPERTIES props = FMOD_PRESET_OFF;
-            sound.system->setReverbProperties(&props);
-        }
-        break;
-    case 1:
-        {
-            FMOD_REVERB_PROPERTIES props = FMOD_PRESET_CAVE;
-            sound.system->setReverbProperties(&props);
-        }
-        break;
-    }
+    sound.setReverb(world.level.reverb);
     sound.StopAll();
     if(world.level.musicID>-1)
         sound.PlayMusic((SOUND_ID)world.level.musicID);
@@ -336,28 +322,25 @@ void Game::loadConfig(const char* filename)
 void P_pause(bool pause)
 {
     bpause = pause;
-    if(pause)
+    if (pause)
     {
         sound.changeMasterVolume(-0.75f);
-        sound.system->getReverbProperties(&sound.last_reverb_props);
-        FMOD_REVERB_PROPERTIES props = FMOD_PRESET_OFF;
-        sound.system->setReverbProperties(&props);
+        sound.cacheReverb(true);
         game.menu.menuDarken = 0.5f;
     }
     else
     {
-        if(!btransitioning)
+        if (!btransitioning)
         {
             I_zeroGameInput();
             I_resetControls();
         }
-        if(bstarted)
+        if (bstarted)
         {
             sound.sfxVolume = game.menu.savedVolume;
-            sound.system->setReverbProperties(&sound.last_reverb_props);
+            sound.cacheReverb(false);
         }
         sound.changeMasterVolume(0.75f);
-
         game.menu.menuDarken = 0.0f;
     }
 }
@@ -426,7 +409,7 @@ void P_computeFPS()
 
     if (time.fpsTime - time.lastfpsTime > time.fpsPollingTime)
     {
-        time.fps = time.fpsFrame*1000.0/(time.fpsTime-time.lastfpsTime);
+        time.fps = time.fpsFrame * 1000.0 / (time.fpsTime - time.lastfpsTime);
         time.lastfpsTime = time.fpsTime;
         time.fpsFrame = 0;
     }
@@ -609,7 +592,7 @@ void I_updateGameInput(Input* pinput)
     if( pinput->keyboard.keyDown('S') ||
         pinput->gamepad.hatDown(GPH_DOWN))
     {
-        if(!player.crouching && !player.holding && (player.currentState != CS_JUMPING && player.currentState != CS_FALLING)) 
+        if(!player.crouching && !player.holding && (player.currentState != CS_JUMPING && player.currentState != CS_FALLING))
         {
             player.crouching = true;
             if(player.health>1)
@@ -836,7 +819,7 @@ void I_updateMenuInput(Input* pinput)
         {
             game.menu.currentItem--;
             if (game.menu.currentItem < 0)
-                game.menu.currentItem = game.menu.current->items.size() - 1;
+                game.menu.currentItem = static_cast<int>(game.menu.current->items.size() - 1);
             select = (bool)game.menu.current->items[game.menu.currentItem].function;
         }
         if(game.menu.currentItem != current_item )
@@ -1807,11 +1790,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         time.lastMoveSizeTime = time.getCurrentTime();
         time.moveSizeTime = time.lastMoveSizeTime - time.lastGameTime;
         SetTimer(hWnd,NULL,1,NULL);
-
-        //RECT rcWind;
-        //GetWindowRect(hWnd, &rcWind);
-        //SetWindowPos(hWnd,NULL,rcWind.left,rcWind.top,rcWind.right - rcWind.left,rcWind.top - rcWind.bottom,NULL);
-
         return DefWindowProc( hWnd, message, wParam, lParam );
 
     case WM_NCLBUTTONUP:

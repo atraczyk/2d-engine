@@ -830,7 +830,9 @@ void Player::resolveTileCollisions(bool dynamic)
     std::sort(collisions.begin(), collisions.end(),
         [](Collision const & a, Collision const & b) -> bool
     { return a.area > b.area; });
-    int newcount = collisions.size() > 2 ? collisions.size() - 1 : collisions.size();
+    int newcount = collisions.size() > 2 ?
+        static_cast<int>(collisions.size() - 1) :
+        static_cast<int>(collisions.size());
     for (int i = 0; i < newcount; i++)
     {
         if (collisions[i].leftCollision || collisions[i].rightCollision)
@@ -1035,7 +1037,7 @@ void Player::resolveFrame(int elapsedframes)
     if (velocity.y < 0) currentState = CS_FALLING;
 
     float delaydivider = 1.0f;
-    int endframe = frames->animations[animationState].size() - 1;
+    int endframe = static_cast<int>(frames->animations[animationState].size() - 1);
     bool loop = false;
     bool advance = true;
 
@@ -1416,7 +1418,9 @@ void Enemy::resolveTileCollisions(bool dynamic)
         [](Collision const & a, Collision const & b) -> bool
     { return a.area > b.area; });
 
-    int newcount = collisions.size() > 2 ? collisions.size() - 1 : collisions.size();
+    int newcount = collisions.size() > 2 ?
+        static_cast<int>(collisions.size() - 1) :
+        static_cast<int>(collisions.size());
     for (int i = 0; i < newcount; i++)
     {
         if (collisions[i].leftCollision || collisions[i].rightCollision)

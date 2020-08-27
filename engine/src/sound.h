@@ -2,16 +2,18 @@
 //  2d platform game engine and level editor by Andreas Traczyk (2014-15)
 //  http://andreastraczyk.com/  email: andreastraczyk@gmail.com
 //
-//  DESCRIPTION:    sound file playing with fmod
+//  DESCRIPTION:    sound file player
 //-----------------------------------------------------------------------------
 
 #ifndef SOUND_H
 #define SOUND_H
 
-#pragma comment(lib, "fmod/fmodex_vc.lib" )
-
-#include "fmod/fmod.hpp"
 #include "shared.h"
+
+#if defined(USE_FMOD)
+#pragma comment(lib, "fmod/fmodex_vc.lib" )
+#include "fmod/fmod.hpp"
+#endif
 
 #define NUM_SOUNDS              11
 
@@ -38,7 +40,6 @@ public:
     float sfxVolume;
     int cantPlayGUISound;
     int cantPlaySfxSound;
-    FMOD_REVERB_PROPERTIES last_reverb_props;
 
     Sound();
     ~Sound();
@@ -51,13 +52,18 @@ public:
     void changeMusicVolume(float amount);
     void changeSfxVolume(float amount);
     void StopAll();
+    void setReverb(bool state);
+    void cacheReverb(bool state);
     void update();
 
+#if defined(USE_FMOD)
+    FMOD_REVERB_PROPERTIES last_reverb_props;
     FMOD::System*     system;
     FMOD::Sound*      sounds[NUM_SOUNDS];
     FMOD::Channel*    musicChannel;
     FMOD::Channel*    sfxChannel;
     FMOD::Channel*    guisfxChannel;
+#endif
 };
 
 #endif

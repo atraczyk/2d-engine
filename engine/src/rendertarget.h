@@ -9,7 +9,7 @@
 #define RENDERTARGET_H
 
 #include <windows.h>
-#include <GL\glew.h>
+#include <GL/glew.h>
 
 #include "rectangle.h"
 #include "vector.h"

@@ -24,10 +24,11 @@ set(SOURCE
     ${SOURCE_DIR}/utils.cpp
     ${SOURCE_DIR}/vector.cpp
 )
-
+file(GLOB_RECURSE HEADERS RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "*.h")
+list(REMOVE_ITEM HEADERS "src/main.h")
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable (${PROJECT_NAME} WIN32 ${SOURCE})
+add_executable (${PROJECT_NAME} WIN32 ${SOURCE} ${HEADERS})
 
 hunter_add_package(glew)
 find_package(glew CONFIG REQUIRED)

@@ -195,6 +195,12 @@ void Input::update()
     gamepad.update();
 }
 
+void safe_free(PHIDP_PREPARSED_DATA pPreparsedData, PHIDP_BUTTON_CAPS pButtonCaps, PHIDP_VALUE_CAPS pValueCaps, HANDLE hHeap){
+    SAFE_FREE(pPreparsedData);
+    SAFE_FREE(pButtonCaps);
+    SAFE_FREE(pValueCaps);
+}
+
 void ReadGamePadInput(PRAWINPUT pRawInput, GamePad &pGamePad)
 {
     PHIDP_PREPARSED_DATA pPreparsedData;
@@ -212,24 +218,62 @@ void ReadGamePadInput(PRAWINPUT pRawInput, GamePad &pGamePad)
     pValueCaps = NULL;
     hHeap = GetProcessHeap();
 
-    CHECK(GetRawInputDeviceInfo(pRawInput->header.hDevice, RIDI_PREPARSEDDATA, NULL, &bufferSize) == 0);
-    CHECK(pPreparsedData = (PHIDP_PREPARSED_DATA)HeapAlloc(hHeap, 0, bufferSize));
-    CHECK((int)GetRawInputDeviceInfo(pRawInput->header.hDevice, RIDI_PREPARSEDDATA, pPreparsedData, &bufferSize) >= 0);
-    CHECK(HidP_GetCaps(pPreparsedData, &Caps) == HIDP_STATUS_SUCCESS);
-    CHECK(pButtonCaps = (PHIDP_BUTTON_CAPS)HeapAlloc(hHeap, 0, sizeof(HIDP_BUTTON_CAPS) * Caps.NumberInputButtonCaps));
+    if(GetRawInputDeviceInfo(pRawInput->header.hDevice, RIDI_PREPARSEDDATA, NULL, &bufferSize) != 0){
+        safe_free(pPreparsedData, pButtonCaps, pValueCaps, hHeap);
+        return;
+    }
+    pPreparsedData = (PHIDP_PREPARSED_DATA)HeapAlloc(hHeap, 0, bufferSize);
+
+    if(!pPreparsedData){
+        safe_free(pPreparsedData, pButtonCaps, pValueCaps, hHeap);
+        return;
+    }
+
+    if((int)GetRawInputDeviceInfo(pRawInput->header.hDevice, RIDI_PREPARSEDDATA, pPreparsedData, &bufferSize) < 0){
+        safe_free(pPreparsedData, pButtonCaps, pValueCaps, hHeap);
+        return;
+    }
+
+    if(HidP_GetCaps(pPreparsedData, &Caps) != HIDP_STATUS_SUCCESS){
+        safe_free(pPreparsedData, pButtonCaps, pValueCaps, hHeap);
+        return;
+    }
+
+    pButtonCaps = (PHIDP_BUTTON_CAPS)HeapAlloc(hHeap, 0, sizeof(HIDP_BUTTON_CAPS) * Caps.NumberInputButtonCaps);
+
+    if(!pButtonCaps){
+        safe_free(pPreparsedData, pButtonCaps, pValueCaps, hHeap);
+        return;
+    }
+
     capsLength = Caps.NumberInputButtonCaps;
-    CHECK(HidP_GetButtonCaps(HidP_Input, pButtonCaps, &capsLength, pPreparsedData) == HIDP_STATUS_SUCCESS);
+    if(HidP_GetButtonCaps(HidP_Input, pButtonCaps, &capsLength, pPreparsedData) != HIDP_STATUS_SUCCESS){
+        safe_free(pPreparsedData, pButtonCaps, pValueCaps, hHeap);
+        return;
+    }
+
+
     pGamePad.numButtons = pButtonCaps->Range.UsageMax - pButtonCaps->Range.UsageMin + 1;
-    CHECK(pValueCaps = (PHIDP_VALUE_CAPS)HeapAlloc(hHeap, 0, sizeof(HIDP_VALUE_CAPS) * Caps.NumberInputValueCaps));
+    pValueCaps = (PHIDP_VALUE_CAPS)HeapAlloc(hHeap, 0, sizeof(HIDP_VALUE_CAPS) * Caps.NumberInputValueCaps);
+
+    if(!pValueCaps){
+        safe_free(pPreparsedData, pButtonCaps, pValueCaps, hHeap);
+        return;
+    }
+
     capsLength = Caps.NumberInputValueCaps;
-    CHECK(HidP_GetValueCaps(HidP_Input, pValueCaps, &capsLength, pPreparsedData) == HIDP_STATUS_SUCCESS);
+
+    if(HidP_GetValueCaps(HidP_Input, pValueCaps, &capsLength, pPreparsedData) != HIDP_STATUS_SUCCESS){
+        safe_free(pPreparsedData, pButtonCaps, pValueCaps, hHeap);
+        return;
+    }
 
     usageLength = pGamePad.numButtons;
-    CHECK(
-        HidP_GetUsages(
-            HidP_Input, pButtonCaps->UsagePage, 0, usage, &usageLength, pPreparsedData,
-            (PCHAR)pRawInput->data.hid.bRawData, pRawInput->data.hid.dwSizeHid
-        ) == HIDP_STATUS_SUCCESS);
+    if(HidP_GetUsages(HidP_Input, pButtonCaps->UsagePage, 0, usage, &usageLength, pPreparsedData,
+            (PCHAR)pRawInput->data.hid.bRawData, pRawInput->data.hid.dwSizeHid) != HIDP_STATUS_SUCCESS){
+            safe_free(pPreparsedData, pButtonCaps, pValueCaps, hHeap);
+            return;
+    }
 
     ZeroMemory(pGamePad.bButtons, sizeof(pGamePad.bButtons));
     for (i = 0; i < usageLength; i++)
@@ -237,11 +281,11 @@ void ReadGamePadInput(PRAWINPUT pRawInput, GamePad &pGamePad)
 
     for (i = 0; i < Caps.NumberInputValueCaps; i++)
     {
-        CHECK(
-            HidP_GetUsageValue(
-                HidP_Input, pValueCaps[i].UsagePage, 0, pValueCaps[i].Range.UsageMin, &value, pPreparsedData,
-                (PCHAR)pRawInput->data.hid.bRawData, pRawInput->data.hid.dwSizeHid
-            ) == HIDP_STATUS_SUCCESS);
+        if(HidP_GetUsageValue(HidP_Input, pValueCaps[i].UsagePage, 0, pValueCaps[i].Range.UsageMin, &value, pPreparsedData,
+                (PCHAR)pRawInput->data.hid.bRawData, pRawInput->data.hid.dwSizeHid)!= HIDP_STATUS_SUCCESS){
+            safe_free(pPreparsedData, pButtonCaps, pValueCaps, hHeap);
+            return;
+        }
 
         switch (pValueCaps[i].Range.UsageMin)
         {
@@ -295,8 +339,4 @@ void ReadGamePadInput(PRAWINPUT pRawInput, GamePad &pGamePad)
     if (pGamePad.lAxisRz < joyDeadZone && pGamePad.lAxisRz > -joyDeadZone)
         pGamePad.lAxisRz = 0;
 
-Error:
-    SAFE_FREE(pPreparsedData);
-    SAFE_FREE(pButtonCaps);
-    SAFE_FREE(pValueCaps);
 }

@@ -14,6 +14,7 @@
 #include "vector.h"
 #include "camera.h"
 #include "rectangle.h"
+#include <algorithm>
 
 Point worldToScreen(Vector2 world_point, Camera camera, ScreenRect screen);
 Vector2 screenToWorld(Point screen_point, Camera camera, ScreenRect screen);
@@ -26,9 +27,9 @@ wchar_t *convertCharArrayToLPCWSTR(const char* charArray);
 template <typename T>
 void remove(std::vector<T>& vec, size_t pos)
 {
-    std::vector<T>::iterator it = vec.begin();
-    std::advance(it, pos);
-    vec.erase(it);
+   // std::vector<T>::iterator it = vec.begin();
+    //std::advance(it, pos);
+    vec.erase(vec.begin()+pos);
 };
 
 template <typename T>

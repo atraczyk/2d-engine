@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <string>
+#include <cmath>
 
 //camera
 #define ACCELERATION            0.75f
@@ -55,7 +56,7 @@
 #define S_PER_GAME_UPDATE       (1.0f / 60.0f)
 #define S_PER_FRAME             (1.0f / 120.0f)
 #define MS_PER_FRAME            (int)(S_PER_FRAME*1000.0f)
-#define CLAMP(x,MIN,MAX)        min(max(MIN,x),MAX)
+#define CLAMP(x,MIN,MAX)        min((double)max((double)MIN,(double)x),(double)MAX)
 #define PI                      3.14159265359f
 #define _16x9                   1.77777777778f
 #define _L(x)                   [](){x}

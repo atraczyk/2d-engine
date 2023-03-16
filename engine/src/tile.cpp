@@ -218,15 +218,15 @@ void TileMap::draw(Camera* camera)
     Point BottomLeft = worldToTile(bl - trans, w_tileSize);
     Point TopRight = worldToTile(tr - trans, w_tileSize);
 
-    Point min;
-    Point max;
-    min.x = max(0, BottomLeft.x - 1);
-    max.x = min(TopRight.x + 1, t_mapSize.x);
-    min.y = max(0, BottomLeft.y - 1);
-    max.y = min(TopRight.y + 1, t_mapSize.y);
+    Point minP;
+    Point maxP;
+    minP.x = max(0, BottomLeft.x - 1);
+    maxP.x = min(TopRight.x + 1, t_mapSize.x);
+    minP.y = max(0, BottomLeft.y - 1);
+    maxP.y = min(TopRight.y + 1, t_mapSize.y);
 
-    Min = min;
-    Max = max;
+    Min = minP;
+    Max = maxP;
 
     dstRect.w = w_tileSize.x;
     dstRect.h = w_tileSize.y;
@@ -236,9 +236,9 @@ void TileMap::draw(Camera* camera)
     glPushMatrix();
     glTranslatef(transx, transy, 0.0f);
     glBegin(GL_QUADS);
-    for (int y = min.y; y < max.y; y++)
+    for (int y = minP.y; y < maxP.y; y++)
     {
-        for (int x = min.x; x < max.x; x++)
+        for (int x = minP.x; x < maxP.x; x++)
         {
             if (imageLayer[x][y].tileIndex < 0)
                 continue;

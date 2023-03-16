@@ -77,11 +77,14 @@ void SpriteAtlas::loadFromFile(const char* filename)
     int na = 0;
     for (int i = 0; i < NUM_SPRITE_ANIMATIONS; i++)
         na = animations[i].size() ? na + 1 : na;
+
     cout << "number of animations: " << na << endl;
+
     for (int i = 0; i < NUM_SPRITE_ANIMATIONS; i++)
     {
         if (animations[i].size())
             cout << "index: " << i << endl;
+
         for (int c = 0; c < animations[i].size(); c++)
             cout << "delay: " << animations[i][c].frameDelay << " x: " << animations[i][c].sourceRectangle.x
             << " y: " << animations[i][c].sourceRectangle.y
@@ -148,19 +151,19 @@ void Entity::populateCollisionTileArray(TileMap* pcollisionmap)
     Point BottomLeft = worldToTile(position + Vector2(leftPadding, bottomPadding) - pcollisionmap->position, pcollisionmap->w_tileSize);
     Point TopRight = worldToTile(position - Vector2(rightPadding, topPadding) + size - pcollisionmap->position, pcollisionmap->w_tileSize);
 
-    Point min;
-    Point max;
+    Point minP;
+    Point maxP;
 
-    min.x = max(0, BottomLeft.x);
-    min.y = max(0, BottomLeft.y);
-    max.x = min(TopRight.x + 1, pcollisionmap->t_mapSize.x);
-    max.y = min(TopRight.y + 1, pcollisionmap->t_mapSize.y);
+    minP.x = max(0, BottomLeft.x);
+    minP.y = max(0, BottomLeft.y);
+    maxP.x = min(TopRight.x + 1, pcollisionmap->t_mapSize.x);
+    maxP.y = min(TopRight.y + 1, pcollisionmap->t_mapSize.y);
 
     float tx, ty;
 
-    for (int y = min.y; y < max.y; y++)
+    for (int y = minP.y; y < maxP.y; y++)
     {
-        for (int x = min.x; x < max.x; x++)
+        for (int x = minP.x; x < maxP.x; x++)
         {
             if (pcollisionmap->collisionLayer[x][y].isCollidable)
             {
@@ -388,8 +391,8 @@ float Entity::intersectionArea(StaticObject* pobj)
     float x22 = pobj->position.x + pobj->size.x;
     float y22 = pobj->position.y + pobj->size.y;
 
-    float x_overlap = max(0, min(x12, x22) - max(x11, x21));
-    float y_overlap = max(0, min(y12, y22) - max(y11, y21));
+    float x_overlap = max(0.0f, min(x12, x22) - max(x11, x21));
+    float y_overlap = max(0.0f, min(y12, y22) - max(y11, y21));
 
     return x_overlap * y_overlap;
 }
@@ -964,19 +967,19 @@ void Player::resolveItemCollisions(TileMap* pmap)
     Point BottomLeft = worldToTile(position + Vector2(leftPadding, bottomPadding) - pmap->position, pmap->w_tileSize);
     Point TopRight = worldToTile(position - Vector2(rightPadding, topPadding) + size - pmap->position, pmap->w_tileSize);
 
-    Point min;
-    Point max;
+    Point minP;
+    Point maxP;
 
-    min.x = max(0, BottomLeft.x - 1);
-    min.y = max(0, BottomLeft.y - 1);
-    max.x = min(TopRight.x + 2, pmap->t_mapSize.x);
-    max.y = min(TopRight.y + 2, pmap->t_mapSize.y);
+    minP.x = max(0, BottomLeft.x - 1);
+    minP.y = max(0, BottomLeft.y - 1);
+    maxP.x = min(TopRight.x + 2, pmap->t_mapSize.x);
+    maxP.y = min(TopRight.y + 2, pmap->t_mapSize.y);
 
     float tx, ty;
     float area;
-    for (int y = min.y; y < max.y; y++)
+    for (int y = minP.y; y < maxP.y; y++)
     {
-        for (int x = min.x; x < max.x; x++)
+        for (int x = minP.x; x < maxP.x; x++)
         {
             tx = (float)(x * pmap->w_tileSize.x) + pmap->position.x;
             ty = (float)(y * pmap->w_tileSize.y) + pmap->position.y;

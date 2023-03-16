@@ -3,7 +3,6 @@ cmake_minimum_required (VERSION 3.13)
 project (engine)
 
 set (SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
-#[[
 set(SOURCE
     ${SOURCE_DIR}/game.cpp
     ${SOURCE_DIR}/camera.cpp
@@ -25,13 +24,10 @@ set(SOURCE
     ${SOURCE_DIR}/utils.cpp
     ${SOURCE_DIR}/vector.cpp
 )
-]]
-file(GLOB_RECURSE SOURCES "*.cpp")
-file(GLOB_RECURSE HEADERS "*.h")
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable (${PROJECT_NAME} WIN32 ${SOURCES} ${HEADERS})
+add_executable (${PROJECT_NAME} WIN32 ${SOURCE})
 
 hunter_add_package(glew)
 find_package(glew CONFIG REQUIRED)

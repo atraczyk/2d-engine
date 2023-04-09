@@ -20,7 +20,7 @@ extern "C"
 #define     NUM_BUTTONS     10
 #define     NUM_M_BUTTONS   2
 #define     SAFE_FREE(p)    { if(p) { HeapFree(hHeap, 0, p); (p) = NULL; } }
-#define     CHECK(exp)      { if(!(exp)) goto Error; }
+//#define     CHECK(exp)      { if(!(exp)) goto Error; }
 
 class KeyBoard
 {

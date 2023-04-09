@@ -68,7 +68,7 @@ public:
     };
     ~Collision() {};
 
-    void Collision::Initialize()
+    void Initialize()
     {
         area = 0;
         minimumTranslation = Vector2(0, 0);

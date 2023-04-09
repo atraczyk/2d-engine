@@ -474,7 +474,10 @@ void G_update(double elapsed_time)
             for(unsigned int i=0;i<world.enemies.size();i++)
             {
                 world.enemies[i].update(&world.constraints,&world.level.layer[2],&(world.level.dynTileMaps.tileMaps),world.gravity,MS_PER_FRAME,&camera,&game.clientRect,i);
-                if(world.enemies[i].toRemove) remove(world.enemies,i);
+
+                if(world.enemies[i].toRemove){
+                    remove(world.enemies,i);
+                }
             }
 
             if(player.position.y <= world.constraints.y - player.size.y || !player.health)
@@ -1468,7 +1471,12 @@ void R_render(HDC hDC)
     }
 
     glFlush();
-    bdoublebuffer ? SwapBuffers( hDC ) : glDrawBuffer(GL_FRONT);
+    if(bdoublebuffer){
+        SwapBuffers(hDC);
+    }else{
+        glDrawBuffer(GL_FRONT);
+    }
+   // bdoublebuffer ? SwapBuffers(hDC) : glDrawBuffer(GL_FRONT);
 }
 
 void R_drawMenus()

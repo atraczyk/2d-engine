@@ -91,7 +91,7 @@ public:
         {
             currentAtlasFrame++;
             if (currentAtlasFrame > frames.size() - 1)
-                currentAtlasFrame = static_cast<UCHAR>(looped ? 0 : frames.size()) - 1;
+                currentAtlasFrame = static_cast<UCHAR>(looped ? 0 : frames.size() - 1);
             currentFrame = 0;
         }
     };

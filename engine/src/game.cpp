@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
-//  2d platform game engine and level editor by Andreas Traczyk (2014-15)
-//  http://andreastraczyk.com/  email: andreastraczyk@gmail.com
+//  2d platform game engine and level editor
+//    email: 
 //
 //  DESCRIPTION:    main entry point
 //-----------------------------------------------------------------------------
@@ -1903,9 +1903,9 @@ void R_render()
                   &dstRect, NULL);
         R_setClientOrthoMatrix();
         font.displayScreenText(9, game.clientRect.h - 10, 0, 0, 0,
-                               "Andreas Traczyk 2014 v0.99");
+                               " 2014 v0.99");
         font.displayScreenText(10, game.clientRect.h - 11, 1, 1, 1,
-                               "Andreas Traczyk 2014 v0.99");
+                               " 2014 v0.99");
         // cursor
         dstRect = ScreenRect(input.mouse.lX, input.mouse.lY,
                              window.scaleValue / 2, window.scaleValue / 2);

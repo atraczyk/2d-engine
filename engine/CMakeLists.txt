@@ -105,10 +105,9 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources/config.ini
 )
 
-# Optional: install README and LICENSE next to exe
+# Optional: install README next to exe
 install(FILES
     ${CMAKE_SOURCE_DIR}/README.md
-    ${CMAKE_SOURCE_DIR}/LICENSE
     DESTINATION ${CMAKE_INSTALL_BINDIR}
     OPTIONAL
 )

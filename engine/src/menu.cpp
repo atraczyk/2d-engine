@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
-//	2d platform game engine and level editor by Andreas Traczyk (2014-15) GPL
-//	http://andreastraczyk.com/	email: andreastraczyk@gmail.com
+//	2d platform game engine and level editor
+//		email: 
 //
 //	DESCRIPTION:	menus and items
 //-----------------------------------------------------------------------------

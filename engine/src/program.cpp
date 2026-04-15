@@ -249,16 +249,22 @@ GLWindow::createGLWindow (bool togglefullscreen)
 int
 GLWindow::currentWidth ()
 {
-  int width;
-  SDL_GetWindowSize (window, &width, nullptr);
+  int width = 0;
+  int height = 0;
+  SDL_GL_GetDrawableSize (window, &width, &height);
+  if (width <= 0)
+    SDL_GetWindowSize (window, &width, nullptr);
   return width;
 }
 
 int
 GLWindow::currentHeight ()
 {
-  int height;
-  SDL_GetWindowSize (window, nullptr, &height);
+  int width = 0;
+  int height = 0;
+  SDL_GL_GetDrawableSize (window, &width, &height);
+  if (height <= 0)
+    SDL_GetWindowSize (window, nullptr, &height);
   return height;
 }
 

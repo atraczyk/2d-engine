@@ -404,6 +404,11 @@ void Game::initializeTextures()
 
 void Game::loadConfig(const char* filename)
 {
+    // Safe defaults if config is missing or malformed.
+    atlasInfo.sprites = {"textures/sprite01.bmp", 32, 16, 16, 32};
+    atlasInfo.tiles = {"textures/tiles03.bmp", 16, 16, 16, 16};
+    atlasInfo.bgs = {"textures/bg01.bmp", 2, 4, 512, 432};
+
     string line;
     ifstream file(resolveResourcePath(filename));
     istringstream ssf;
@@ -1118,9 +1123,14 @@ int main(int argc, char* argv[])
                     quit = true;
                     break;
                 case SDL_WINDOWEVENT:
-                    if (event.window.event == SDL_WINDOWEVENT_RESIZED)
+                    if (event.window.event == SDL_WINDOWEVENT_RESIZED ||
+                        event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
                     {
-                        R_resize(event.window.data1, event.window.data2);
+                        int drawableW = event.window.data1;
+                        int drawableH = event.window.data2;
+                        SDL_GL_GetDrawableSize(window.window, &drawableW,
+                                               &drawableH);
+                        R_resize(drawableW, drawableH);
                     }
                     break;
                 case SDL_KEYDOWN:
@@ -2099,6 +2109,9 @@ void R_drawSelectedMenuItem(MenuItem item, float tx, float ty, float tw,
 
 void R_resize(int w, int h)
 {
+    if (w <= 0 || h <= 0)
+        return;
+
     game.clientRect.w = (float)w;
     game.clientRect.h = (float)h;
     game.aspectRatio = game.clientRect.w / game.clientRect.h;

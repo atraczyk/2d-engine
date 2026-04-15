@@ -111,8 +111,12 @@ void TileMap::load(const char *filename, TileAtlas *ptexatlas,
       }
       row++;
     }
-    t_mapSize = Point(static_cast<int>(imageLayer.size()),
-                      static_cast<int>(imageLayer[0].size()));
+    if (!imageLayer.empty()) {
+      t_mapSize = Point(static_cast<int>(imageLayer.size()),
+                        static_cast<int>(imageLayer[0].size()));
+    } else {
+      t_mapSize = Point(0, 0);
+    }
 
     if (has_c_Map) {
       done = false;
@@ -128,8 +132,12 @@ void TileMap::load(const char *filename, TileAtlas *ptexatlas,
               CTile(index, (index != 0), entry_type[index], NULL));
         }
       }
-      t_cmapSize = Point(static_cast<int>(collisionLayer.size()),
-                         static_cast<int>(collisionLayer[0].size()));
+      if (!collisionLayer.empty()) {
+        t_cmapSize = Point(static_cast<int>(collisionLayer.size()),
+                           static_cast<int>(collisionLayer[0].size()));
+      } else {
+        t_cmapSize = Point(0, 0);
+      }
     }
     file.close();
   }
@@ -189,6 +197,9 @@ void TileMap::update() {
 }
 
 void TileMap::draw(Camera *camera) {
+  if (!atlas || !atlas->sourceRectangles || t_mapSize.x <= 0 || t_mapSize.y <= 0)
+    return;
+
   float transx = (int)(camera->position.x + camera->size.x / 2) * w_depth;
   float transy = (int)(camera->position.y + camera->size.y / 2) * w_depth;
   Vector2 trans = Vector2(transx, transy);
@@ -234,6 +245,11 @@ void TileMap::draw(Camera *camera) {
 }
 
 void TileMap::DrawTile(Camera *camera, ScreenRect dstRect, int index) {
+  if (!atlas || !atlas->sourceRectangles)
+    return;
+  if (index < 0 || index >= atlas->totalFrames)
+    return;
+
   srcRect = atlas->sourceRectangles[index];
   glTexCoord2d(srcRect.fLeft(), srcRect.fTop());
   glVertex2f(dstRect.fLeft(), dstRect.fBottom());

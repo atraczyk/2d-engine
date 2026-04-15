@@ -21,6 +21,15 @@ TileAtlas::~TileAtlas()
 void TileAtlas::initialize(unsigned int* ptex, int frames_wide, int frames_high,
                            int frame_width, int frame_height)
 {
+    if (frames_wide <= 0)
+        frames_wide = 1;
+    if (frames_high <= 0)
+        frames_high = 1;
+    if (frame_width <= 0)
+        frame_width = 1;
+    if (frame_height <= 0)
+        frame_height = 1;
+
     texture = ptex;
     totalFrames = frames_wide * frames_high;
     frames = Point(frames_wide, frames_high);
@@ -93,9 +102,18 @@ std::vector<unsigned char> loadTextureARGBfromfile(const char* filename, int& w,
     fread(header, 1, 54, file);
     w = *(int*)&(header[0x12]);
     h = *(int*)&(header[0x16]);
+    int dataOffset = *(int*)&(header[0x0A]);
+    short bitsPerPixel = *(short*)&(header[0x1C]);
+
+    if (bitsPerPixel != 32 || w <= 0 || h <= 0)
+    {
+        fclose(file);
+        printf("loadTexture unsupported format! %s\n", filename);
+        return data;
+    }
 
     data.resize(w * h * 4);
-    fread(data.data(), 16, 1, file);
+    fseek(file, dataOffset, SEEK_SET);
     fread(data.data(), w * h * 4, 1, file);
 
     fclose(file);

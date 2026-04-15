@@ -8,36 +8,41 @@
 #ifndef RENDERTARGET_H
 #define RENDERTARGET_H
 
-#include <windows.h>
+// Include OpenGL headers
 #include <GL/glew.h>
 
+// Finally include our own headers
 #include "rectangle.h"
 #include "vector.h"
 
-class RenderTarget
-{
+class RenderTarget {
 public:
-    int width;
-    int height;
-    bool hasdepthbuffer;
-    unsigned int fbo;
-    unsigned int rbo_depth;
-    unsigned int fbo_texture;
+  int width;
+  int height;
+  bool hasdepthbuffer;
+  unsigned int fbo;
+  unsigned int rbo_depth;
+  unsigned int fbo_texture;
 
-    RenderTarget() {};
-    ~RenderTarget() {};
+  RenderTarget(){};
+  ~RenderTarget(){};
 
-    void Create(int w, int h, bool hasdepth);
-    void Clear(float r, float g, float b, float a);
-    void Resize(int w, int h);
-    void Delete();
+  void Create(int w, int h, bool hasdepth);
+  void Clear(float r, float g, float b, float a);
+  void Resize(int w, int h);
+  void Delete();
 };
 
-void DrawFullscreenQuad(RenderTarget dst, RenderTarget src, unsigned int shader);
+void DrawFullscreenQuad(RenderTarget dst, RenderTarget src,
+                        unsigned int shader);
 void DrawFullscreenQuad(RenderTarget dst, unsigned int shader);
-void DrawFullscreenQuadG(unsigned int framebuffer, unsigned int texture, unsigned int shader);
-void DrawFullscreenQuadS(RenderTarget dst, RenderTarget src, ScreenRect* psrcRect, unsigned int shader);
-void DrawQuadD(RenderTarget dst, RenderTarget src, ScreenRect* pdstRect, unsigned int shader);
-void DrawQuad(RenderTarget dst, unsigned int texture, ScreenRect* psrcRect, ScreenRect* pdstRect, unsigned int shader);
+void DrawFullscreenQuadG(unsigned int framebuffer, unsigned int texture,
+                         unsigned int shader);
+void DrawFullscreenQuadS(RenderTarget dst, RenderTarget src,
+                         ScreenRect *psrcRect, unsigned int shader);
+void DrawQuadD(RenderTarget dst, RenderTarget src, ScreenRect *pdstRect,
+               unsigned int shader);
+void DrawQuad(RenderTarget dst, unsigned int texture, ScreenRect *psrcRect,
+              ScreenRect *pdstRect, unsigned int shader);
 
 #endif

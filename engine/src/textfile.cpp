@@ -5,11 +5,15 @@
 //	DESCRIPTION:	text file utilites
 //-----------------------------------------------------------------------------
 
+#include "textfile.h"
+#include "utils.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string>
 
-char* textFileRead(char *fn)
+char* textFileRead(const char *fn)
 {
     FILE *file;
     char *content = NULL;
@@ -18,7 +22,8 @@ char* textFileRead(char *fn)
 
     if (fn != NULL)
     {
-        fopen_s(&file, fn, "rt");
+        const std::string resolvedPath = resolveResourcePath(fn);
+        file = fopen(resolvedPath.c_str(), "rt");
 
         if (file != NULL)
         {
@@ -38,14 +43,14 @@ char* textFileRead(char *fn)
     return content;
 }
 
-int textFileWrite(char *fn, char *s)
+int textFileWrite(const char *fn, const char *s)
 {
     FILE *file;
     int status = 0;
 
     if (fn != NULL)
     {
-        fopen_s(&file, fn, "rt");
+        file = fopen(fn, "wt");
 
         if (file != NULL)
         {

@@ -18,310 +18,265 @@ along with Platformer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "program.h"
+
+#include <GL/glew.h>
+#include <GL/gl.h>
+
 #include <iostream>
 
-#pragma warning(disable:4244)
+#ifdef _MSC_VER
+#pragma warning(disable : 4244)
+#endif
 
-GLWindow::GLWindow()
+GLWindow::GLWindow ()
 {
-	hDC		= NULL;
-	hRC		= NULL;
-	hWnd	= NULL;
+  window = nullptr;
+  glContext = nullptr;
+  borderWidth = 0;
+  borderHeight = 0;
 }
 
-GLWindow::~GLWindow()
+GLWindow::~GLWindow ()
 {
-	destroyGLWindow();
+  destroyGLWindow ();
 }
 
-void GLWindow::initialize()
+void
+GLWindow::initialize ()
 {
-	isActive			= true;
-	isFullscreen		= false;
-	windowedMode		= 1; 
-	fullscreenMode		= 0; 
-	scaleMode			= 1;
+  isActive = true;
+  isFullscreen = false;
+  windowedMode = 1;
+  fullscreenMode = 0;
+  scaleMode = 1;
 
-	EnumDisplaySettings (NULL, ENUM_CURRENT_SETTINGS, &nativeMode);
+  SDL_DisplayMode nativeMode;
+  SDL_GetCurrentDisplayMode (0, &nativeMode);
 
-	videoModes[0] = VideoMode(4*nativeMode.dmPelsWidth/4, 4*nativeMode.dmPelsHeight/4, 32);
-	videoModes[1] = VideoMode(3*nativeMode.dmPelsWidth/4, 3*nativeMode.dmPelsHeight/4, 32);
-	videoModes[2] = VideoMode(2*nativeMode.dmPelsWidth/4, 2*nativeMode.dmPelsHeight/4, 32);
-	videoModes[3] = VideoMode(1*nativeMode.dmPelsWidth/4, 1*nativeMode.dmPelsHeight/4, 32);
+  videoModes[0] = VideoMode (4 * nativeMode.w / 4, 4 * nativeMode.h / 4, 32);
+  videoModes[1] = VideoMode (3 * nativeMode.w / 4, 3 * nativeMode.h / 4, 32);
+  videoModes[2] = VideoMode (2 * nativeMode.w / 4, 2 * nativeMode.h / 4, 32);
+  videoModes[3] = VideoMode (1 * nativeMode.w / 4, 1 * nativeMode.h / 4, 32);
 
-	for(int i=1; i<NUM_MODES;i++)
-	{
-		if(videoModes[i].height % 2 != 0)
-			videoModes[i].height = videoModes[i].height-1;
-	}
+  // Initialize virtual modes for compatibility
+  virtualModes[0] = VideoMode (1920, 1080, 32);
+  virtualModes[1] = VideoMode (1440, 810, 32);
+  virtualModes[2] = VideoMode (960, 540, 32);
+  virtualModes[3] = VideoMode (480, 270, 32);
+
+  for (int i = 1; i < NUM_MODES; i++)
+    {
+      if (videoModes[i].height % 2 != 0)
+        videoModes[i].height = videoModes[i].height - 1;
+    }
 }
 
-void GLWindow::computeScale()
+void
+GLWindow::computeScale ()
 {
-	scaleValue = 16.0f;
-	scaleMode = 3;
-	float w = (float)currentWidth();
-	float h = (float)currentHeight();
-	if ( (w/h) <  (16.0f/9.0f))
-	{
-		if(w>=1920)
-		{
-			scaleMode = 0;
-			scaleValue = 64.0f;
-		}
-		else if(w>=1440)
-		{
-			scaleMode = 1;
-			scaleValue = 48.0f;
-		}
-		else if(w>=960)
-		{
-			scaleMode = 2;
-			scaleValue = 32.0f;
-		}
-	}
-	else
-	{
-		if(h>=1080)
-		{
-			scaleMode = 0;
-			scaleValue = 64.0f;
-		}
-		else if(h>=810)
-		{
-			scaleMode = 1;
-			scaleValue = 48.0f;
-		}
-		else if(h>=540)
-		{
-			scaleMode = 2;
-			scaleValue = 32.0f;
-		}
-	}
+  scaleValue = 16.0f;
+  scaleMode = 3;
+  float w = (float) currentWidth ();
+  float h = (float) currentHeight ();
+  if ((w / h) < (16.0f / 9.0f))
+    {
+      if (w >= 1920)
+        {
+          scaleMode = 0;
+          scaleValue = 64.0f;
+        }
+      else if (w >= 1440)
+        {
+          scaleMode = 1;
+          scaleValue = 48.0f;
+        }
+      else if (w >= 960)
+        {
+          scaleMode = 2;
+          scaleValue = 32.0f;
+        }
+    }
+  else
+    {
+      if (h >= 1080)
+        {
+          scaleMode = 0;
+          scaleValue = 64.0f;
+        }
+      else if (h >= 810)
+        {
+          scaleMode = 1;
+          scaleValue = 48.0f;
+        }
+      else if (h >= 540)
+        {
+          scaleMode = 2;
+          scaleValue = 32.0f;
+        }
+    }
 }
 
-void GLWindow::destroyGLWindow()
+void
+GLWindow::destroyGLWindow ()
 {
-	destroyGL();
+  destroyGL ();
 
-	if ( hDC)
-	{
-		ReleaseDC( hWnd, hDC);
-		hDC = NULL;
-	}
+  if (glContext)
+    {
+      SDL_GL_DeleteContext (glContext);
+      glContext = nullptr;
+    }
 
-	if ( hWnd)
-	{
-		DestroyWindow( hWnd);
-		hWnd = NULL;
-	}
-
-	UnregisterClass(__TEXT("OGL"),hInstance);
-	hInstance = NULL;	
+  if (window)
+    {
+      SDL_DestroyWindow (window);
+      window = nullptr;
+    }
 }
 
-void GLWindow::destroyGL()
+void
+GLWindow::destroyGL ()
 {
-	if ( isFullscreen)
-	{
-		ChangeDisplaySettings( NULL, 0);
-		ShowCursor( true);
-	}
-
-	if ( hRC)
-	{
-		wglMakeCurrent( NULL, NULL);
-		wglDeleteContext( hRC);
-		hRC = NULL;
-	}
+  if (isFullscreen)
+    {
+      SDL_SetWindowFullscreen (window, 0);
+      SDL_ShowCursor (SDL_ENABLE);
+    }
 }
 
-void GLWindow::initGL(int bits)
+bool
+GLWindow::initGL (int bits)
 {
-	GLuint		PixelFormat;
-	static	PIXELFORMATDESCRIPTOR pfd;
+#ifdef __APPLE__
+  SDL_GL_SetAttribute (SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+  SDL_GL_SetAttribute (SDL_GL_CONTEXT_MINOR_VERSION, 1);
+#endif
+  SDL_GL_SetAttribute (SDL_GL_DOUBLEBUFFER, 1);
+  SDL_GL_SetAttribute (SDL_GL_DEPTH_SIZE, 16);
+  SDL_GL_SetAttribute (SDL_GL_RED_SIZE, 8);
+  SDL_GL_SetAttribute (SDL_GL_GREEN_SIZE, 8);
+  SDL_GL_SetAttribute (SDL_GL_BLUE_SIZE, 8);
+  SDL_GL_SetAttribute (SDL_GL_ALPHA_SIZE, 8);
 
-	ZeroMemory( &pfd, sizeof( pfd ) );
-	pfd.nSize = sizeof( PIXELFORMATDESCRIPTOR );
-	pfd.nVersion = 1;
-	pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-	pfd.iPixelType = PFD_TYPE_RGBA;
-	pfd.cColorBits = bits;
-	pfd.cDepthBits = 16;
-	pfd.iLayerType = PFD_MAIN_PLANE;
+  glContext = SDL_GL_CreateContext (window);
+  if (!glContext)
+    {
+      std::cerr << "Failed to create OpenGL context: " << SDL_GetError ()
+                << std::endl;
+      return false;
+    }
 
-	hDC = GetDC(hWnd);	
-	PixelFormat = ChoosePixelFormat(hDC,&pfd);
-	SetPixelFormat(hDC,PixelFormat,&pfd);
-	hRC = wglCreateContext(hDC);
-	wglMakeCurrent(hDC,hRC);	
+  if (SDL_GL_MakeCurrent (window, glContext) < 0)
+    {
+      std::cerr << "Failed to make OpenGL context current: " << SDL_GetError ()
+                << std::endl;
+      return false;
+    }
+
+  // Initialize GLEW with experimental flag
+  glewExperimental = GL_TRUE;
+  GLenum err = glewInit ();
+  if (err != GLEW_OK)
+    {
+      std::cerr << "Failed to initialize GLEW: " << glewGetErrorString (err)
+                << std::endl;
+      return false;
+    }
+
+  return true;
 }
 
-BOOL GLWindow::createGLWindow(char* title, WNDPROC WndProc)
+bool
+GLWindow::createGLWindow (const char *title)
 {
-	WNDCLASS	wc;
-	DWORD		dwExStyle;	
-	DWORD		dwStyle;
-	RECT		WindowRect;
+  int width = isFullscreen ? videoModes[fullscreenMode].width
+                           : videoModes[windowedMode].width;
+  int height = isFullscreen ? videoModes[fullscreenMode].height
+                            : videoModes[windowedMode].height;
+  int bits = isFullscreen ? videoModes[fullscreenMode].bpp
+                          : videoModes[windowedMode].bpp;
 
-	int	width = isFullscreen?videoModes[fullscreenMode].width:videoModes[windowedMode].width;
-	int	height = isFullscreen?videoModes[fullscreenMode].height:videoModes[windowedMode].height;
-	int	bits = isFullscreen?videoModes[fullscreenMode].bpp:videoModes[windowedMode].bpp;
+  SDL_DisplayMode currentMode;
+  SDL_GetCurrentDisplayMode (0, &currentMode);
+  windowPosition =
+    Point (currentMode.w / 2 - width / 2, currentMode.h / 2 - height / 2);
 
-	windowPosition = Point(nativeMode.dmPelsWidth/2 - width/2, nativeMode.dmPelsHeight/2 - height/2);
+  int x = isFullscreen ? 0 : windowPosition.x;
+  int y = isFullscreen ? 0 : windowPosition.y;
 
-	int	x = isFullscreen?0:windowPosition.x;
-	int	y = isFullscreen?0:windowPosition.y;
+  Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
+  if (isFullscreen)
+    {
+      flags |= SDL_WINDOW_FULLSCREEN;
+      SDL_ShowCursor (SDL_DISABLE);
+    }
 
-	WindowRect.left = (long) x;
-	WindowRect.right = (long) x + width;
-	WindowRect.top = (long) y;	
-	WindowRect.bottom = (long) y + height;
+  window = SDL_CreateWindow (title, x, y, width, height, flags);
+  if (!window)
+    {
+      std::cerr << "Failed to create window: " << SDL_GetError () << std::endl;
+      return false;
+    }
 
-	hInstance			= GetModuleHandle(NULL);
-	wc.style			= CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-	wc.lpfnWndProc		= (WNDPROC) WndProc;
-	wc.cbClsExtra		= 0;
-	wc.cbWndExtra		= 0;
-	wc.hInstance		= hInstance;
-	wc.hIcon			= LoadIcon(NULL, IDI_APPLICATION);
-	wc.hCursor			= LoadCursor(NULL, IDC_ARROW);
-	wc.hbrBackground	= NULL;	
-	wc.lpszMenuName		= NULL;	
-	wc.lpszClassName	= __TEXT("OGL");  
+  if (!initGL (bits))
+    {
+      SDL_ShowSimpleMessageBox (SDL_MESSAGEBOX_ERROR, "Error",
+                                "OpenGL initialization failed.", window);
+      SDL_DestroyWindow (window);
+      window = nullptr;
+      return false;
+    }
 
-	RegisterClass(&wc);
-
-	if (isFullscreen)
-	{
-		DEVMODE dm;								
-		memset(&dm,0,sizeof(dm));
-		dm.dmSize=sizeof(dm);
-		dm.dmPelsWidth	= width;
-		dm.dmPelsHeight	= height;
-		dm.dmBitsPerPel	= bits;	
-		dm.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
-		ChangeDisplaySettings(&dm,CDS_FULLSCREEN);		
-		dwExStyle = WS_EX_APPWINDOW;
-		dwStyle = WS_POPUP;
-		ShowCursor(false);
-	}
-	else
-	{
-		dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
-		if(windowedMode == 0)
-			dwStyle = WS_OVERLAPPED | WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU;
-		else
-			dwStyle = WS_OVERLAPPEDWINDOW | WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU;
-	}
-
-	AdjustWindowRectEx(&WindowRect, dwStyle, false, dwExStyle);
-
-	hWnd=CreateWindowEx(	dwExStyle,
-		__TEXT("OGL"),
-		title,
-		dwStyle |
-		WS_CLIPSIBLINGS |
-		WS_CLIPCHILDREN,
-		WindowRect.left, WindowRect.top,
-		WindowRect.right-WindowRect.left,
-		WindowRect.bottom-WindowRect.top,
-		NULL,
-		NULL,
-		hInstance,
-		NULL);	
-
-	RECT rcClient,rcWind;
-	GetClientRect(hWnd, &rcClient); 
-	GetWindowRect(hWnd, &rcWind); 
-	borderWidth = 2*((rcWind.right - rcWind.left) - rcClient.right)/2; 
-	borderHeight = 2*((rcWind.bottom - rcWind.top) - rcClient.bottom)/2; 
-
-	initGL(bits);
-
-	SetForegroundWindow(hWnd);
-	SetFocus(hWnd);
-	return true;
+  SDL_RaiseWindow (window);
+  return true;
 }
 
-void GLWindow::createGLWindow(bool togglefullscreen)
+void
+GLWindow::createGLWindow (bool togglefullscreen)
 {
+  if (togglefullscreen)
+    {
+      isFullscreen = !isFullscreen;
+      destroyGL ();
+    }
 
-	if(togglefullscreen)
-	{
-		isFullscreen = !isFullscreen;	
-		destroyGL();
-	}
+  int width = isFullscreen ? videoModes[fullscreenMode].width
+                           : videoModes[windowedMode].width;
+  int height = isFullscreen ? videoModes[fullscreenMode].height
+                            : videoModes[windowedMode].height;
 
-	RECT		WindowRect;
-
-	int	width = isFullscreen?videoModes[fullscreenMode].width:videoModes[windowedMode].width;
-	int	height = isFullscreen?videoModes[fullscreenMode].height:videoModes[windowedMode].height;
-	int	bits = isFullscreen?videoModes[fullscreenMode].bpp:videoModes[windowedMode].bpp;
-
-	windowPosition = Point(nativeMode.dmPelsWidth/2 - width/2, nativeMode.dmPelsHeight/2 - height/2);
-
-	int	x = isFullscreen?0:windowPosition.x;
-	int	y = isFullscreen?0:windowPosition.y;
-
-	WindowRect.left = (long) x;
-	WindowRect.right = (long) x + width;
-	WindowRect.top = (long) y;	
-	WindowRect.bottom = (long) y + height;
-
-	if(isFullscreen) 
-	{
-		SetWindowLongPtr(hWnd, GWL_EXSTYLE, WS_EX_APPWINDOW );
-		SetWindowLongPtr(hWnd, GWL_STYLE, 
-			WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE);
-		SetWindowPos(hWnd,HWND_TOP, 0, 0, width, height, SWP_SHOWWINDOW);
-
-		DEVMODE dm;
-		dm.dmSize = sizeof(DEVMODE);
-		dm.dmPelsWidth = width;
-		dm.dmPelsHeight = height;
-		dm.dmBitsPerPel = bits;
-		dm.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL;
-		ChangeDisplaySettings(&dm,CDS_FULLSCREEN);
-		ShowCursor(false);
-	}
-	else
-	{
-		DWORD dwStyle;
-		DWORD dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;	
-		if(windowedMode == 0)
-			dwStyle = WS_OVERLAPPED | WS_MINIMIZEBOX | WS_SYSMENU;
-		else
-			dwStyle = WS_OVERLAPPEDWINDOW | WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU;
-		SetWindowLongPtr(hWnd, GWL_EXSTYLE,  dwExStyle);
-		SetWindowLongPtr(hWnd, GWL_STYLE, dwStyle);
-		AdjustWindowRectEx(&WindowRect, dwStyle, false, dwExStyle);
-		SetWindowPos(hWnd,HWND_TOP, WindowRect.left, WindowRect.top,
-			WindowRect.right-WindowRect.left,
-			WindowRect.bottom-WindowRect.top, SWP_SHOWWINDOW);
-		if(togglefullscreen)
-			ChangeDisplaySettings(NULL, 0);
-	}
-
-	if(togglefullscreen)
-		initGL(bits);
+  if (isFullscreen)
+    {
+      SDL_SetWindowFullscreen (window, SDL_WINDOW_FULLSCREEN);
+      SDL_ShowCursor (SDL_DISABLE);
+    }
+  else
+    {
+      SDL_SetWindowFullscreen (window, 0);
+      SDL_SetWindowSize (window, width, height);
+      SDL_SetWindowPosition (window, windowPosition.x, windowPosition.y);
+      SDL_ShowCursor (SDL_ENABLE);
+    }
 }
 
-int GLWindow::currentWidth()
+int
+GLWindow::currentWidth ()
 {
-	RECT rcClient;
-	GetClientRect(hWnd, &rcClient); 
-	return rcClient.right - rcClient.left;	
+  int width;
+  SDL_GetWindowSize (window, &width, nullptr);
+  return width;
 }
 
-int GLWindow::currentHeight()
+int
+GLWindow::currentHeight ()
 {
-	RECT rcClient;
-	GetClientRect(hWnd, &rcClient); 
-	return rcClient.bottom - rcClient.top;
+  int height;
+  SDL_GetWindowSize (window, nullptr, &height);
+  return height;
 }
 
-int GLWindow::currentMode()
+int
+GLWindow::currentMode ()
 {
-	return isFullscreen?fullscreenMode:windowedMode;
+  return isFullscreen ? fullscreenMode : windowedMode;
 }

@@ -6,6 +6,7 @@
 //-----------------------------------------------------------------------------
 
 #include "sound.h"
+#include "utils.h"
 #include <iostream>
 
 Sound::Sound()
@@ -33,17 +34,17 @@ Sound::~Sound()
 bool Sound::load()
 {
 #if defined(USE_FMOD)
-    system->createStream("sounds/smw_yio1.mp3", FMOD_SOFTWARE | FMOD_LOOP_NORMAL, 0, &sounds[SOUND_MUSIC1]);
-    system->createStream("sounds/smw_ug1.mp3", FMOD_SOFTWARE | FMOD_LOOP_NORMAL, 0, &sounds[SOUND_MUSIC2]);
-    system->createSound("sounds/smw_jump.wav", FMOD_HARDWARE, 0, &sounds[SOUND_JUMP]);
-    system->createSound("sounds/smw_thud.wav", FMOD_HARDWARE, 0, &sounds[SOUND_THUD]);
-    system->createSound("sounds/select1.wav", FMOD_HARDWARE, 0, &sounds[SOUND_SELECT1]);
-    system->createSound("sounds/select2.wav", FMOD_HARDWARE, 0, &sounds[SOUND_SELECT2]);
-    system->createSound("sounds/select3.wav", FMOD_HARDWARE, 0, &sounds[SOUND_SELECT3]);
-    system->createSound("sounds/smw_coin.wav", FMOD_HARDWARE, 0, &sounds[SOUND_COIN]);
-    system->createSound("sounds/smw_stomp.wav", FMOD_HARDWARE, 0, &sounds[SOUND_STOMP]);
-    system->createSound("sounds/smb_shrink.wav", FMOD_HARDWARE, 0, &sounds[SOUND_HURT]);
-    system->createSound("sounds/smw_swimming.wav", FMOD_HARDWARE, 0, &sounds[SOUND_SWIM]);
+    system->createStream(resolveResourcePath("sounds/smw_yio1.mp3").c_str(), FMOD_SOFTWARE | FMOD_LOOP_NORMAL, 0, &sounds[SOUND_MUSIC1]);
+    system->createStream(resolveResourcePath("sounds/smw_ug1.mp3").c_str(), FMOD_SOFTWARE | FMOD_LOOP_NORMAL, 0, &sounds[SOUND_MUSIC2]);
+    system->createSound(resolveResourcePath("sounds/smw_jump.wav").c_str(), FMOD_HARDWARE, 0, &sounds[SOUND_JUMP]);
+    system->createSound(resolveResourcePath("sounds/smw_thud.wav").c_str(), FMOD_HARDWARE, 0, &sounds[SOUND_THUD]);
+    system->createSound(resolveResourcePath("sounds/select1.wav").c_str(), FMOD_HARDWARE, 0, &sounds[SOUND_SELECT1]);
+    system->createSound(resolveResourcePath("sounds/select2.wav").c_str(), FMOD_HARDWARE, 0, &sounds[SOUND_SELECT2]);
+    system->createSound(resolveResourcePath("sounds/select3.wav").c_str(), FMOD_HARDWARE, 0, &sounds[SOUND_SELECT3]);
+    system->createSound(resolveResourcePath("sounds/smw_coin.wav").c_str(), FMOD_HARDWARE, 0, &sounds[SOUND_COIN]);
+    system->createSound(resolveResourcePath("sounds/smw_stomp.wav").c_str(), FMOD_HARDWARE, 0, &sounds[SOUND_STOMP]);
+    system->createSound(resolveResourcePath("sounds/smb_shrink.wav").c_str(), FMOD_HARDWARE, 0, &sounds[SOUND_HURT]);
+    system->createSound(resolveResourcePath("sounds/smw_swimming.wav").c_str(), FMOD_HARDWARE, 0, &sounds[SOUND_SWIM]);
     system->getReverbProperties(&last_reverb_props);
 #endif
     return true;

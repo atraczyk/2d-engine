@@ -23,11 +23,13 @@ void Level::initializeLevel()
 
 void World::loadLevel(const char* filename, Camera* camera)
 {
+    printf("Loading level: %s\n", filename);
+
     level.initializeLevel();
     enemies.clear();
 
     string line;
-    ifstream file(filename);
+    ifstream file(resolveResourcePath(filename));
     istringstream ssf;
     int done = 0;
     string layerfile[NUM_LAYERS];
@@ -47,12 +49,16 @@ void World::loadLevel(const char* filename, Camera* camera)
             {
                 switch (i)
                 {
-                case 0: case 1:
-                    level.layer[i].load(layerfile[i].c_str(), &game.atlases.bgs, camera);
-                    break;
-                case 2: case 3:
-                    level.layer[i].load(layerfile[i].c_str(), &game.atlases.tiles, camera);
-                    break;
+                    case 0:
+                    case 1:
+                        level.layer[i].load(layerfile[i].c_str(),
+                                            &game.atlases.bgs, camera);
+                        break;
+                    case 2:
+                    case 3:
+                        level.layer[i].load(layerfile[i].c_str(),
+                                            &game.atlases.tiles, camera);
+                        break;
                 }
             }
             else
@@ -67,18 +73,17 @@ void World::loadLevel(const char* filename, Camera* camera)
 
         getline(file, line);
         ssf = istringstream(line);
-        ssf >> level.playerSpawn.position.x
-            >> level.playerSpawn.position.y
-            >> level.playerSpawn.type
-            >> level.playerSpawn.direction;
+        ssf >> level.playerSpawn.position.x >> level.playerSpawn.position.y >>
+            level.playerSpawn.type >> level.playerSpawn.direction;
 
-        //TODO portals/items
+        // TODO portals/items
 
         EnemySpawn spawn;
         while (getline(file, line))
         {
             istringstream ss(line);
-            ss >> spawn.type >> spawn.position.x >> spawn.position.y >> spawn.direction;
+            ss >> spawn.type >> spawn.position.x >> spawn.position.y >>
+                spawn.direction;
             if (spawn.type == -1)
                 break;
             level.enemySpawns.push_back(spawn);
@@ -91,29 +96,40 @@ void World::loadLevel(const char* filename, Camera* camera)
         {
             istringstream ss(line);
             ss >> mf >> t >> x >> y >> w >> h >> tw >> th;
-            dobject.initialize(x, y, w, h, tw, th, 0.0f, &game.atlases.tiles, true, t, 1);
+            dobject.initialize(x, y, w, h, tw, th, 0.0f, &game.atlases.tiles,
+                               true, t, 1);
             switch (mf)
             {
-            case 0:
-                level.dynTileMaps.Add(dobject, [](unsigned int frame)
-                {
-                    float ftime = ((float)frame)*S_PER_GAME_UPDATE;
-                    return Vector2((int)(2 * sgn(sinf((2 * PI / 2)*ftime))), (int)(-1 * sgn(sinf((2 * PI / 8)*ftime))));
-                });
-                break;
-            case 1:
-                level.dynTileMaps.Add(dobject, [](unsigned int frame)
-                {
-                    float ftime = ((float)frame)*S_PER_GAME_UPDATE;
-                    return Vector2((int)2 * sgn(sinf((2 * PI / 40)*ftime)), (int)0.0f);
-                });
-                break;
+                case 0:
+                    level.dynTileMaps.Add(
+                        dobject,
+                        [](unsigned int frame)
+                        {
+                            float ftime = ((float)frame) * S_PER_GAME_UPDATE;
+                            return Vector2(
+                                (int)(2 * sgn(sinf((2 * PI / 2) * ftime))),
+                                (int)(-1 * sgn(sinf((2 * PI / 8) * ftime))));
+                        });
+                    break;
+                case 1:
+                    level.dynTileMaps.Add(
+                        dobject,
+                        [](unsigned int frame)
+                        {
+                            float ftime = ((float)frame) * S_PER_GAME_UPDATE;
+                            return Vector2((int)2 *
+                                               sgn(sinf((2 * PI / 40) * ftime)),
+                                           (int)0.0f);
+                        });
+                    break;
             }
         }
         file.close();
     }
 
-    constraints = WorldRect(level.layer[2].w_tileSize.x, 0,
-        level.layer[2].t_mapSize.x * level.layer[2].w_tileSize.x - 2 * level.layer[2].w_tileSize.x,
-        level.layer[2].t_mapSize.y * level.layer[2].w_tileSize.y);
+    constraints =
+        WorldRect(level.layer[2].w_tileSize.x, 0,
+                  level.layer[2].t_mapSize.x * level.layer[2].w_tileSize.x -
+                      2 * level.layer[2].w_tileSize.x,
+                  level.layer[2].t_mapSize.y * level.layer[2].w_tileSize.y);
 }

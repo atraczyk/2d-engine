@@ -1,65 +1,69 @@
 //-----------------------------------------------------------------------------
-//	2d platform game engine and level editor by Andreas Traczyk (2014-15) GPL
-//	http://andreastraczyk.com/	email: andreastraczyk@gmail.com
+//	2d platform game engine and level editor by Andreas Traczyk (2014-15)
+// GPL 	http://andreastraczyk.com/	email: andreastraczyk@gmail.com
 //
 //	DESCRIPTION:	time handling
 //-----------------------------------------------------------------------------
 
-#include "time.h"
+#include <SDL2/SDL.h>
 
-Time::Time(void)
-{
+#include "game_time.h"
+
+GameTime::GameTime() {
+  startTime = 0.0;
+  lastTime = 0.0;
+  currentTime = 0.0;
+  gameTime = 0.0;
+  pauseTime = 0.0;
+  moveSizeTime = 0.0;
+  lastMoveSizeTime = 0.0;
+  lastGameTime = 0.0;
+  remaining = 0.0;
+  fps = 0.0;
+  fpsTime = 0.0;
+  lastfpsTime = 0.0;
+  fpsPollingTime = 1000.0;
+  fpsFrame = 0;
+  currentFrame = 0;
+  frameMultiplier = 1.0;
 }
 
-Time::~Time(void)
-{
+GameTime::~GameTime() {}
+
+void GameTime::initialize() {
+  startTime = getCurrentTime();
+  lastTime = startTime;
+  currentTime = startTime;
+  gameTime = 0.0;
+  pauseTime = 0.0;
+  moveSizeTime = 0.0;
+  lastMoveSizeTime = startTime;
+  lastGameTime = startTime;
+  remaining = 0.0;
+  fps = 0.0;
+  fpsTime = 0.0;
+  lastfpsTime = 0.0;
+  fpsPollingTime = 1000.0;
+  fpsFrame = 0;
+  currentFrame = 0;
+  frameMultiplier = 1.0;
 }
 
-void Time::initialize()
-{
+double GameTime::getCurrentTime() {
+  const Uint64 frequency = SDL_GetPerformanceFrequency();
+  const Uint64 counter = SDL_GetPerformanceCounter();
+  return static_cast<double>(counter) / static_cast<double>(frequency);
+}
+
+double GameTime::getCurrentMilliseconds() { return getCurrentTime() * 1000.0; }
+
+void GameTime::computeFPS() {
+  fpsFrame++;
+  fpsTime = getCurrentMilliseconds();
+
+  if (fpsTime - lastfpsTime > fpsPollingTime) {
+    fps = fpsFrame * 1000.0 / (fpsTime - lastfpsTime);
+    lastfpsTime = fpsTime;
     fpsFrame = 0;
-    lastfpsTime = 0;
-    fps = 0.0f;
-    fpsPollingTime = 250.0f;
-    currentFrame = 0;
-    pauseTime = 0.0f;
-    moveSizeTime = 0.0f;
-    lastMoveSizeTime = 0.0f;
-    startTime = getCurrentTime();
-    gameTime = 0.0f;
-    remaining = 0.0f;
-    lastGameTime = 0.0f;
-    frameMultiplier = 1.0;
-}
-
-double Time::getCurrentTime()
-{
-    static LARGE_INTEGER frequency;
-    LARGE_INTEGER currentTime;
-
-    if (frequency.QuadPart == 0)
-    {
-        QueryPerformanceFrequency(&frequency);
-    }
-    QueryPerformanceCounter(&currentTime);
-
-    return (double)currentTime.QuadPart / frequency.QuadPart;
-}
-
-int Time::getCurrentMilliseconds()
-{
-    return (int)(1000 * getCurrentTime());
-}
-
-void Time::computeFPS()
-{
-    fpsFrame++;
-    fpsTime = getCurrentMilliseconds();
-
-    if (fpsTime - lastfpsTime > fpsPollingTime)
-    {
-        fps = fpsFrame*1000.0f / (fpsTime - lastfpsTime);
-        lastfpsTime = fpsTime;
-        fpsFrame = 0;
-    }
+  }
 }

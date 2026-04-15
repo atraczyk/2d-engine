@@ -1,0 +1,194 @@
+# Requirements
+
+- Windows, Linux, or macOS
+- Git
+- CMake 3.15 or later
+- A C++ toolchain for your platform
+- Internet connection (for first-time build)
+
+# Description
+
+A 2D platform game engine with:
+
+- (static/dynamic/sloped) tile and sprite collision resolution
+- Keyboard/mouse/joystick support for game and menus
+
+A map editor to edit:
+
+- 3 layers:
+  - background
+  - foreground
+  - collisions (optional)
+
+# Building the Project
+
+## Quick Start (Windows)
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/2d-engine.git
+   cd 2d-engine
+   ```
+
+2. Run the build script:
+   ```bash
+   build.bat
+   ```
+
+The script will automatically:
+- Install vcpkg if not present
+- Set up the build environment
+- Build the project in Release mode
+
+The executable will be available in `build/engine/Release/`.
+
+## Quick Start (Linux/macOS)
+
+```bash
+./build.sh
+```
+
+The executable will be available in `build/engine/`.
+
+## Manual Build
+
+If you prefer to build manually:
+
+1. Install vcpkg:
+   ```bash
+   git clone https://github.com/microsoft/vcpkg.git
+   cd vcpkg
+   # Windows:
+   ./bootstrap-vcpkg.bat
+   # Linux/macOS:
+   ./bootstrap-vcpkg.sh
+   ```
+
+2. Set the VCPKG_ROOT environment variable to your vcpkg installation path
+
+3. Create and enter a build directory:
+   ```bash
+   mkdir build
+   cd build
+   ```
+
+4. Configure and build:
+   ```bash
+   cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DCMAKE_BUILD_TYPE=Release
+   cmake --build build --config Release
+   ```
+
+# Runtime Resources
+
+- Runtime assets live under `resources/`.
+- The executable searches in this order:
+  - `ENGINE_RESOURCE_ROOT`
+  - executable-adjacent `resources/`
+  - repo-local `resources/`
+  - legacy relative paths
+
+# Controls
+
+## Game
+- **Movement:** Joy hat, `W/A/S/D`
+- **Run:** Joy button 2, `M`
+- **Jump/Swim:** Joy button 0, `N`
+- **Attack:** Joy button 3, `Y`
+- **Unlock camera:** `T`
+- **Move camera:** `Up/Left/Down/Right`
+- **Menu toggle:** Joy button 7, `Space`, RightClick
+- **Menu select:** Joy button 0, `Return`, LeftClick
+- **Quit:** `Escape`, joy button 6
+- **Fullscreen:** `F1`
+- **Decrease size:** `J`
+- **Increase size:** `K`
+- **Slow/Fast:** Joy button 4 / joy button 5
+- **Layers toggle:** `1-7`
+- **Debug:** `F2`
+- **Show collisions:** `F3`
+- **Show hit boxes:** `F4`
+- **Doublebuffer:** `F6`
+- **Bilinear and scan lines:** `F7`
+- **Curvature:** `F8`
+- **Adjust curvature:** `8 / 9`
+
+## Editor
+- **Move camera:** `W/A/S/D`, RightDown drag
+- **Select:** LeftClick
+- **Paint:** LeftControl + LeftClick
+- **Edit front:** `M`
+- **Edit back:** `N`
+- **Edit collisions:** `C`
+- **Edit image:** `V`
+- **Draw front:** `1`
+- **Draw back:** `2`
+- **Draw collisions:** `3`
+- **Fullscreen:** `F1`
+- **Decrease size:** `J`
+- **Increase size:** `K`
+- **Doublebuffer:** `F6`
+- **Quit:** `Escape`, joy button 6
+
+# Installation
+
+(Instructions not provided)
+
+# Contact Details
+
+andreastraczyk@gmail.com
+
+# Tools Used
+
+- Microsoft Visual Studio Express 2012
+- GIMP 2.8.10
+
+# Licensing/Legal
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# Short term roadmap
+
+- [ ] Refactor to use vcpkg
+- [ ] Fix build for modern compilers
+- [ ] Add documentation
+- [ ] Use SDL2
+
+# Long term roadmap
+
+- [ ] Add tests
+- [ ] Add a plugin system (for things like audio, etc.)
+- [ ] Add more examples
+- [ ] Extend to to be use 3d rendering techniques
+- [ ] Use plugins to control game mechanics
+- [ ] Add a example top-down RPG (Secret of Mana - style)
+
+# Naming Conventions
+
+## Function prefixes in `main.cpp`
+
+| Prefix | Meaning                |
+|--------|------------------------|
+| GL     | opengl                 |
+| P      | program                |
+| R      | raster                 |
+| S      | sound                  |
+| I      | input                  |
+| M      | menu                   |
+| C      | enemy/player           |
+| L      | tile/level             |
+| O      | collision              |
+| T      | time                   |
+| U      | utility/misc           |
+| E      | event                  |
+| G      | game                   |

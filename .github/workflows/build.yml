@@ -1,0 +1,72 @@
+name: build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  compile:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux OpenGL deps
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dev
+
+      - name: Setup vcpkg (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git "$env:RUNNER_TEMP/vcpkg"
+          & "$env:RUNNER_TEMP/vcpkg/bootstrap-vcpkg.bat"
+          "VCPKG_ROOT=$env:RUNNER_TEMP/vcpkg" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Setup vcpkg (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git "$RUNNER_TEMP/vcpkg"
+          "$RUNNER_TEMP/vcpkg/bootstrap-vcpkg.sh"
+          echo "VCPKG_ROOT=$RUNNER_TEMP/vcpkg" >> "$GITHUB_ENV"
+
+      - name: Configure
+        run: >
+          cmake -S . -B build
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_TOOLCHAIN_FILE=${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Smoke check runtime layout (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $exe = "build/engine/Release/engine.exe"
+          if (!(Test-Path $exe)) { throw "Missing executable: $exe" }
+          $resourceChecks = @(
+            "build/engine/Release/resources/config.ini",
+            "build/engine/Release/resources/levels/demo.lvl",
+            "build/engine/Release/resources/shaders/post.v.glsl"
+          )
+          foreach ($p in $resourceChecks) {
+            if (!(Test-Path $p)) { throw "Missing runtime resource: $p" }
+          }
+
+      - name: Smoke check runtime layout (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          test -f build/engine/engine
+          test -f build/engine/resources/config.ini
+          test -f build/engine/resources/levels/demo.lvl
+          test -f build/engine/resources/shaders/post.v.glsl
+

@@ -8,33 +8,38 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-#include <Windows.h>
+// Include OpenGL headers
 #include <GL/glew.h>
 
+// Then include standard C/C++ headers
 #include <stdio.h>
+#include <vector>
+
+// Finally include our own headers
 #include "point.h"
-#include "vector.h"
 #include "rectangle.h"
+#include "vector.h"
 
-class TileAtlas
-{
+class TileAtlas {
 public:
-    unsigned int* texture;
-    int totalFrames;
-    Point frames;
-    Point imageSize;
-    Point imageFrameSize;
-    Vector2 texel;
-    Vector2 textureFrameSize;
-    ScreenRect* sourceRectangles;
+  unsigned int *texture;
+  int totalFrames;
+  Point frames;
+  Point imageSize;
+  Point imageFrameSize;
+  Vector2 texel;
+  Vector2 textureFrameSize;
+  ScreenRect *sourceRectangles;
 
-    TileAtlas();
-    ~TileAtlas();
+  TileAtlas();
+  ~TileAtlas();
 
-    void initialize(unsigned int* ptex, int frames_wide, int frames_high, int frame_width, int frame_height);
+  void initialize(unsigned int *ptex, int frames_wide, int frames_high,
+                  int frame_width, int frame_height);
 };
 
-unsigned int    loadBMPTexture_ARGB(const char * filename);
-unsigned char*  loadTextureARGBfromfile(const char * filename, int& w, int& h);
+unsigned int loadBMPTexture_ARGB(const char *filename);
+std::vector<unsigned char> loadTextureARGBfromfile(const char *filename, int &w,
+                                                   int &h);
 
 #endif

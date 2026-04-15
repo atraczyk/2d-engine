@@ -1,11 +1,15 @@
-cmake_minimum_required (VERSION 3.13)
+cmake_minimum_required(VERSION 3.15)
 
-include("cmake/HunterGate.cmake")
-HunterGate(
-    URL "https://github.com/ruslo/hunter/archive/v0.23.214.tar.gz"
-    SHA1 "e14bc153a7f16d6a5eeec845fb0283c8fad8c358"
-)
+project(2dengine VERSION 0.1.0 LANGUAGES CXX)
 
-project (2dengine)
+# Set C++ standard
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_subdirectory (engine)
+# Add vcpkg toolchain file if it exists
+if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        CACHE STRING "")
+endif()
+
+add_subdirectory(engine)

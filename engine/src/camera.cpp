@@ -1,11 +1,19 @@
 //-----------------------------------------------------------------------------
-//	2d platform game engine and level editor by Andreas Traczyk (2014-15) GPL
-//	http://andreastraczyk.com/	email: andreastraczyk@gmail.com
+//	2d platform game engine and level editor by Andreas Traczyk (2014-15)
+// GPL 	http://andreastraczyk.com/	email: andreastraczyk@gmail.com
 //
 //	DESCRIPTION:	camera class
 //-----------------------------------------------------------------------------
 
+// clang-format off
+// OpenGL headers in correct order
+#include <GL/glew.h>
+#include <GL/gl.h>
+// clang-format on
+
+// Finally include our own headers
 #include "camera.h"
+#include "shared.h"
 #include "utils.h"
 #include <math.h>
 
@@ -19,9 +27,7 @@ Camera::Camera()
     isTargeting = false;
 }
 
-Camera::~Camera()
-{
-}
+Camera::~Camera() {}
 
 void Camera::initialize(int x, int y, int width, int height)
 {
@@ -36,9 +42,8 @@ void Camera::setOrthoMatrix()
 {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho((int)(position.x), (int)(position.x + size.x),
-        (int)(position.y), (int)(position.y + size.y),
-        -1.0f, 1.0f);
+    glOrtho((int)(position.x), (int)(position.x + size.x), (int)(position.y),
+            (int)(position.y + size.y), -1.0f, 1.0f);
 }
 
 void Camera::reshape(float w, float h)
@@ -55,14 +60,16 @@ void Camera::reshape(float w, float h)
 
 void Camera::moveToTarget()
 {
-    position = pTarget->position + pTarget->size*0.5f - size*0.5f;
+    position = pTarget->position + pTarget->size * 0.5f - size * 0.5f;
 }
 
 void Camera::update(WorldRect* pconstraints)
 {
     if (isTargeting)
     {
-        velocity = (((pTarget->position + pTarget->size*0.5f) - size*0.5f - position)*0.25f);
+        velocity = (((pTarget->position + pTarget->size * 0.5f) - size * 0.5f -
+                     position) *
+                    0.25f);
 
         if (abs(velocity.x) < 1.0f)
             velocity.x = 0.0f;

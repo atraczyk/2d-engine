@@ -29,28 +29,28 @@ typedef enum CHARACTER_STATE
     CS_MOVINGRIGHT = 0x02,
     CS_JUMPING = 0x04,
     CS_FALLING = 0x08
-}CHARACTER_STATE;
+} CHARACTER_STATE;
 
 typedef enum ENEMY_TYPE
 {
     ET_KOOPA = 0,
     ET_GOOMBA = 1,
     ET_SHELL = 2
-}ENEMY_TYPE;
+} ENEMY_TYPE;
 
 typedef enum ITEM_TYPE
 {
     IT_MUSHROOM = 0,
     IT_STAR = 1,
     IT_FLOWER = 2
-}ITEM_TYPE;
+} ITEM_TYPE;
 
 class CollisionInfo
 {
 public:
-    float       area;
+    float area;
     std::string axis;
-    int         index;
+    int index;
 
     CollisionInfo(float Area = 0, std::string Axis = NULL, int Index = 0)
     {
@@ -58,7 +58,7 @@ public:
         axis = Axis;
         index = Index;
     };
-    ~CollisionInfo() {};
+    ~CollisionInfo(){};
 };
 
 #define NUM_SPRITE_ANIMATIONS 128
@@ -93,7 +93,7 @@ typedef enum ANIMATION
     E3_IDLE = 48,
     E3_MOVE = 49,
     E3_JUMP = 50
-}ANIMATION;
+} ANIMATION;
 
 struct AnimationFrame
 {
@@ -101,7 +101,7 @@ struct AnimationFrame
     int frameDelay;
 
     AnimationFrame(ScreenRect src_rect, unsigned int delay);
-    ~AnimationFrame() {};
+    ~AnimationFrame(){};
 };
 
 class SpriteAtlas
@@ -112,8 +112,8 @@ public:
     Point imageSize;
     std::vector<AnimationFrame> animations[NUM_SPRITE_ANIMATIONS];
 
-    SpriteAtlas() {};
-    ~SpriteAtlas() {};
+    SpriteAtlas(){};
+    ~SpriteAtlas(){};
 
     void initialize(unsigned int* ptex);
     void loadFromFile(const char* filename);
@@ -162,18 +162,18 @@ public:
     Entity();
     ~Entity();
 
-    virtual void draw(Camera* camera) {};
-    void    setAnimationState(ANIMATION state = (ANIMATION)-1, int frame = 0);
-    void    initialize(float x, float y, float w, float h, float pl, float pr,
-        float pt, float pb, TileAtlas* ptexatlas);
-    void    populateCollisionTileArray(TileMap* ptilemap);
-    float   intersectionArea(StaticObject* pobj);
-    void    landing();
-    bool    tileIntersectionTest(StaticObject* ptile, Collision& collision,
-        unsigned short flags);
-    bool    entityIntersectionTest(Entity* pentity, Collision& collision);
-    void    advanceAnimationFrame(int elapsedframes, float framedivider,
-        int endframe, bool loop);
+    virtual void draw(Camera* camera){};
+    void setAnimationState(ANIMATION state = (ANIMATION)-1, int frame = 0);
+    void initialize(float x, float y, float w, float h, float pl, float pr,
+                    float pt, float pb, TileAtlas* ptexatlas);
+    void populateCollisionTileArray(TileMap* ptilemap);
+    float intersectionArea(StaticObject* pobj);
+    void landing();
+    bool tileIntersectionTest(StaticObject* ptile, Collision& collision,
+                              unsigned short flags);
+    bool entityIntersectionTest(Entity* pentity, Collision& collision);
+    void advanceAnimationFrame(int elapsedframes, float framedivider,
+                               int endframe, bool loop);
     AnimationFrame* getFrame();
 };
 
@@ -196,16 +196,16 @@ public:
     Player();
     ~Player();
 
-    void    Hit();
-    void    draw(Camera* camera);
-    void    reinitialize(float x, float y);
-    void    update(WorldRect* pconstraints, TileMap* pcollisionmap,
-        TileMap* pfrontmap, std::vector<TileMap>* pdcollisionmaps,
-        Vector2 world_accel, int elapsedFrames, Camera* pcamera,
-        ScreenRect* pscreen);
-    void    resolveTileCollisions(bool dynamic);
-    void    resolveFrame(int elapsedframes);
-    void    resolveItemCollisions(TileMap* pmap);
+    void Hit();
+    void draw(Camera* camera);
+    void reinitialize(float x, float y);
+    void update(WorldRect* pconstraints, TileMap* pcollisionmap,
+                TileMap* pfrontmap, std::vector<TileMap>* pdcollisionmaps,
+                Vector2 world_accel, int elapsedFrames, Camera* pcamera,
+                ScreenRect* pscreen);
+    void resolveTileCollisions(bool dynamic);
+    void resolveFrame(int elapsedframes);
+    void resolveItemCollisions(TileMap* pmap);
 };
 
 class Enemy : public Entity
@@ -219,16 +219,17 @@ public:
     Player* pHolder;
 
     Enemy(ENEMY_TYPE enemy_type, float x, float y, float w, float h, float ivx,
-        float ivy, float pl, float pr, float pt, float pb,
-        TileAtlas* ptexatlas);
+          float ivy, float pl, float pr, float pt, float pb,
+          TileAtlas* ptexatlas);
     ~Enemy();
 
-    void    draw(Camera* camera);
-    void    update(WorldRect* pconstraints, TileMap* pcollisionmap,
-        std::vector<TileMap>* pdcollisionmaps, Vector2 world_accel,
-        int elapsedFrames, Camera* pcamera, ScreenRect* pscreen, int index);
-    void    resolveTileCollisions(bool dynamic);
-    void    resolveFrame(int elapsedFrames);
+    void draw(Camera* camera);
+    void update(WorldRect* pconstraints, TileMap* pcollisionmap,
+                std::vector<TileMap>* pdcollisionmaps, Vector2 world_accel,
+                int elapsedFrames, Camera* pcamera, ScreenRect* pscreen,
+                int index);
+    void resolveTileCollisions(bool dynamic);
+    void resolveFrame(int elapsedFrames);
 };
 
 class Item : public Entity
@@ -238,16 +239,17 @@ public:
     bool toRemove;
 
     Item(ITEM_TYPE item_type, float x, float y, float w, float h, float ivx,
-        float ivy, float pl, float pr, float pt, float pb,
-        TileAtlas* ptexatlas);
+         float ivy, float pl, float pr, float pt, float pb,
+         TileAtlas* ptexatlas);
     ~Item();
 
-    void    draw(Camera* camera);
-    void    update(WorldRect* pconstraints, TileMap* pcollisionmap,
-        std::vector<TileMap>* pdcollisionmaps, Vector2 world_accel,
-        int elapsedFrames, Camera* pcamera, ScreenRect* pscreen, int index);
-    void    resolveTileCollisions(bool dynamic);
-    void    resolveFrame(int elapsedFrames);
+    void draw(Camera* camera);
+    void update(WorldRect* pconstraints, TileMap* pcollisionmap,
+                std::vector<TileMap>* pdcollisionmaps, Vector2 world_accel,
+                int elapsedFrames, Camera* pcamera, ScreenRect* pscreen,
+                int index);
+    void resolveTileCollisions(bool dynamic);
+    void resolveFrame(int elapsedFrames);
 };
 
 #endif

@@ -1,0 +1,24 @@
+{
+    "name": "2d-engine",
+    "version": "0.1.0",
+    "description": "A 2D game engine built with OpenGL",
+    "dependencies": [
+        {
+            "name": "glew"
+        },
+        {
+            "name": "opengl",
+            "platform": "windows"
+        },
+        {
+            "name": "sdl2"
+        }
+    ],
+    "builtin-baseline": "3e5b8de5f6ebe844bee9d9eba0aed35c652e3c9c",
+    "overrides": [
+        {
+            "name": "glew",
+            "version": "2.2.0#6"
+        }
+    ]
+}

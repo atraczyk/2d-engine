@@ -8,7 +8,7 @@
 #ifndef TEXTFILE_H
 #define TEXTFILE_H
 
-char* textFileRead(char *fn);
-int textFileWrite(char *fn, char *s);
+char* textFileRead(const char *fn);
+int textFileWrite(const char *fn, const char *s);
 
 #endif

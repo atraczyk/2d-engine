@@ -7,7 +7,9 @@
 
 #include "vector.h"
 
+#ifdef _MSC_VER
 #pragma warning(disable:4244)
+#endif
 
 //Vector2
 Vector2::Vector2(float _x, float _y)

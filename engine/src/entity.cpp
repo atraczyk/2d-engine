@@ -6,17 +6,17 @@
 //-----------------------------------------------------------------------------
 
 #include "entity.h"
-#include "utils.h"
-#include "sound.h"
 #include "input.h"
+#include "sound.h"
+#include "utils.h"
 #include "world.h"
 
 #include <fstream>
 #include <sstream>
 
-extern Sound                sound;
-extern World                world;
-extern Input                input;
+extern Sound sound;
+extern World world;
+extern Input input;
 
 AnimationFrame::AnimationFrame(ScreenRect src_rect, unsigned int delay)
 {
@@ -24,15 +24,12 @@ AnimationFrame::AnimationFrame(ScreenRect src_rect, unsigned int delay)
     frameDelay = delay;
 }
 
-void SpriteAtlas::initialize(unsigned int* ptex)
-{
-    texture = ptex;
-}
+void SpriteAtlas::initialize(unsigned int* ptex) { texture = ptex; }
 
 void SpriteAtlas::loadFromFile(const char* filename)
 {
     string line;
-    ifstream file(filename);
+    ifstream file(resolveResourcePath(filename));
     istringstream ssf;
     int delay;
     int index;
@@ -40,25 +37,22 @@ void SpriteAtlas::loadFromFile(const char* filename)
 
     if (file.is_open())
     {
-        cout << "fileopen" << endl;
         getline(file, line);
         if (line.compare(0, 3, "\xEF\xBB\xBF") == 0)
             line.erase(0, 3);
         ssf = istringstream(line);
         ssf >> imageSize.x >> imageSize.y;
-        cout << "l0: " << line << endl;
         while (getline(file, line))
         {
             ssf = istringstream(line);
-            cout << "li: " << line << endl;
             ssf >> index;
             if (index != -1)
             {
                 while (getline(file, line))
                 {
                     ssf = istringstream(line);
-                    cout << "lf: " << line << endl;
-                    ssf >> delay >> srcRect.x >> srcRect.y >> srcRect.w >> srcRect.h;
+                    ssf >> delay >> srcRect.x >> srcRect.y >> srcRect.w >>
+                        srcRect.h;
                     if (delay == -1)
                         break;
                     else
@@ -74,33 +68,18 @@ void SpriteAtlas::loadFromFile(const char* filename)
         }
         file.close();
     }
-    int na = 0;
-    for (int i = 0; i < NUM_SPRITE_ANIMATIONS; i++)
-        na = animations[i].size() ? na + 1 : na;
-    cout << "number of animations: " << na << endl;
-    for (int i = 0; i < NUM_SPRITE_ANIMATIONS; i++)
-    {
-        if (animations[i].size())
-            cout << "index: " << i << endl;
-        for (int c = 0; c < animations[i].size(); c++)
-            cout << "delay: " << animations[i][c].frameDelay << " x: " << animations[i][c].sourceRectangle.x
-            << " y: " << animations[i][c].sourceRectangle.y
-            << " w: " << animations[i][c].sourceRectangle.w
-            << " h: " << animations[i][c].sourceRectangle.h << endl;
-    }
 }
 
-void SpriteAtlas::addFrame(unsigned int index, ScreenRect src_rect, unsigned int delay)
+void SpriteAtlas::addFrame(unsigned int index, ScreenRect src_rect,
+                           unsigned int delay)
 {
     animations[index].push_back(AnimationFrame(src_rect, delay));
 }
 
-Entity::Entity()
-{
-    atlas = NULL;
-}
+Entity::Entity() { atlas = NULL; }
 
-void Entity::initialize(float x, float y, float w, float h, float pl, float pr, float pt, float pb, TileAtlas* ptexatlas)
+void Entity::initialize(float x, float y, float w, float h, float pl, float pr,
+                        float pt, float pb, TileAtlas* ptexatlas)
 {
     animationState = 0;
     atlas = ptexatlas;
@@ -123,9 +102,7 @@ void Entity::initialize(float x, float y, float w, float h, float pl, float pr, 
     canJump = true;
 }
 
-Entity::~Entity()
-{
-}
+Entity::~Entity() {}
 
 void Entity::setAnimationState(ANIMATION state, int frame)
 {
@@ -145,16 +122,21 @@ void Entity::populateCollisionTileArray(TileMap* pcollisionmap)
     collidableTiles.tileIndices.clear();
     collidableTiles.velocity = Vector2(0, 0);
 
-    Point BottomLeft = worldToTile(position + Vector2(leftPadding, bottomPadding) - pcollisionmap->position, pcollisionmap->w_tileSize);
-    Point TopRight = worldToTile(position - Vector2(rightPadding, topPadding) + size - pcollisionmap->position, pcollisionmap->w_tileSize);
+    Point BottomLeft =
+        worldToTile(position + Vector2(leftPadding, bottomPadding) -
+                        pcollisionmap->position,
+                    pcollisionmap->w_tileSize);
+    Point TopRight = worldToTile(position - Vector2(rightPadding, topPadding) +
+                                     size - pcollisionmap->position,
+                                 pcollisionmap->w_tileSize);
 
     Point min;
     Point max;
 
-    min.x = max(0, BottomLeft.x);
-    min.y = max(0, BottomLeft.y);
-    max.x = min(TopRight.x + 1, pcollisionmap->t_mapSize.x);
-    max.y = min(TopRight.y + 1, pcollisionmap->t_mapSize.y);
+    min.x = std::max(0, BottomLeft.x);
+    min.y = std::max(0, BottomLeft.y);
+    max.x = std::min(TopRight.x + 1, pcollisionmap->t_mapSize.x);
+    max.y = std::min(TopRight.y + 1, pcollisionmap->t_mapSize.y);
 
     float tx, ty;
 
@@ -164,18 +146,25 @@ void Entity::populateCollisionTileArray(TileMap* pcollisionmap)
         {
             if (pcollisionmap->collisionLayer[x][y].isCollidable)
             {
-                tx = (float)(x * pcollisionmap->w_tileSize.x) + pcollisionmap->position.x;
-                ty = (float)(y * pcollisionmap->w_tileSize.y) + pcollisionmap->position.y;
-                collidableTiles.tileObjects.push_back(StaticObject(Vector2(tx, ty), Vector2(pcollisionmap->w_tileSize.x, pcollisionmap->w_tileSize.y)));
-                collidableTiles.tileFlags.push_back(pcollisionmap->collisionLayer[x][y].collisionFlags);
-                collidableTiles.tileIndices.push_back(pcollisionmap->imageLayer[x][y].tileIndex);
+                tx = (float)(x * pcollisionmap->w_tileSize.x) +
+                     pcollisionmap->position.x;
+                ty = (float)(y * pcollisionmap->w_tileSize.y) +
+                     pcollisionmap->position.y;
+                collidableTiles.tileObjects.push_back(StaticObject(
+                    Vector2(tx, ty), Vector2(pcollisionmap->w_tileSize.x,
+                                             pcollisionmap->w_tileSize.y)));
+                collidableTiles.tileFlags.push_back(
+                    pcollisionmap->collisionLayer[x][y].collisionFlags);
+                collidableTiles.tileIndices.push_back(
+                    pcollisionmap->imageLayer[x][y].tileIndex);
                 collidableTiles.velocity = pcollisionmap->velocity;
             }
         }
     }
 }
 
-bool Entity::tileIntersectionTest(StaticObject* ptile, Collision& collision, unsigned short flags)
+bool Entity::tileIntersectionTest(StaticObject* ptile, Collision& collision,
+                                  unsigned short flags)
 {
     float pl = position.x + leftPadding;
     float pr = position.x + size.x - rightPadding;
@@ -240,8 +229,10 @@ bool Entity::tileIntersectionTest(StaticObject* ptile, Collision& collision, uns
         collision.flags = flags;
         if (flags & CT_LEFT_SLOPE || flags & CT_RIGHT_SLOPE)
         {
-            float t = (pcx - tl) / ptile->size.x;;
-            collision.leftSlopeCollision = (flags & CT_LEFT_SLOPE) ? true : false;
+            float t = (pcx - tl) / ptile->size.x;
+            ;
+            collision.leftSlopeCollision =
+                (flags & CT_LEFT_SLOPE) ? true : false;
             collision.rightSlopeCollision = !collision.leftSlopeCollision;
             collision.centerInBetween = (pcx >= tl && pcx <= tr);
             float leftfloor, rightfloor;
@@ -255,7 +246,8 @@ bool Entity::tileIntersectionTest(StaticObject* ptile, Collision& collision, uns
                 else
                 {
                     leftfloor = (flags & CT_0_TO_7) ? 0 : ptile->size.y * 0.5f;
-                    rightfloor = (flags & CT_0_TO_7) ? ptile->size.y * 0.5f : ptile->size.y;
+                    rightfloor = (flags & CT_0_TO_7) ? ptile->size.y * 0.5f
+                                                     : ptile->size.y;
                 }
             }
             else
@@ -267,7 +259,8 @@ bool Entity::tileIntersectionTest(StaticObject* ptile, Collision& collision, uns
                 }
                 else
                 {
-                    leftfloor = (flags & CT_0_TO_7) ? ptile->size.y * 0.5f : ptile->size.y;
+                    leftfloor = (flags & CT_0_TO_7) ? ptile->size.y * 0.5f
+                                                    : ptile->size.y;
                     rightfloor = (flags & CT_0_TO_7) ? 0 : ptile->size.y * 0.5f;
                 }
             }
@@ -388,8 +381,8 @@ float Entity::intersectionArea(StaticObject* pobj)
     float x22 = pobj->position.x + pobj->size.x;
     float y22 = pobj->position.y + pobj->size.y;
 
-    float x_overlap = max(0, min(x12, x22) - max(x11, x21));
-    float y_overlap = max(0, min(y12, y22) - max(y11, y21));
+    float x_overlap = std::max(0.0f, std::min(x12, x22) - std::max(x11, x21));
+    float y_overlap = std::max(0.0f, std::min(y12, y22) - std::max(y11, y21));
 
     return x_overlap * y_overlap;
 }
@@ -409,16 +402,14 @@ Player::Player()
     health = 3;
 }
 
-Player::~Player()
-{
-}
+Player::~Player() {}
 
 void Player::draw(Camera* camera)
 {
     ScreenRect srcRect = getFrame()->sourceRectangle;
-    int flashsmall = (health < 2 && hit>59) ? (hit % 3 ? 1 : 0) : (health < 2 ? 1 : 0);
-    srcRect.y += flashsmall*srcRect.h;
-    cout << flashsmall;
+    int flashsmall =
+        (health < 2 && hit > 59) ? (hit % 3 ? 1 : 0) : (health < 2 ? 1 : 0);
+    srcRect.y += flashsmall * srcRect.h;
     if (direction == -1)
     {
         srcRect.x += srcRect.w;
@@ -429,27 +420,38 @@ void Player::draw(Camera* camera)
     glBindTexture(GL_TEXTURE_2D, *(atlas->texture));
     glBegin(GL_QUADS);
     {
-        glTexCoord2d(srcRect.fLeft(), srcRect.fTop());  glVertex2f(dstRect.fLeft(), dstRect.fBottom());
-        glTexCoord2d(srcRect.fRight(), srcRect.fTop()); glVertex2f(dstRect.fRight(), dstRect.fBottom());
-        glTexCoord2d(srcRect.fRight(), srcRect.fBottom());  glVertex2f(dstRect.fRight(), dstRect.fTop());
-        glTexCoord2d(srcRect.fLeft(), srcRect.fBottom());   glVertex2f(dstRect.fLeft(), dstRect.fTop());
-        if (swimming && !crouching && (currentState == CS_JUMPING || currentState == CS_FALLING))
+        glTexCoord2d(srcRect.fLeft(), srcRect.fTop());
+        glVertex2f(dstRect.fLeft(), dstRect.fBottom());
+        glTexCoord2d(srcRect.fRight(), srcRect.fTop());
+        glVertex2f(dstRect.fRight(), dstRect.fBottom());
+        glTexCoord2d(srcRect.fRight(), srcRect.fBottom());
+        glVertex2f(dstRect.fRight(), dstRect.fTop());
+        glTexCoord2d(srcRect.fLeft(), srcRect.fBottom());
+        glVertex2f(dstRect.fLeft(), dstRect.fTop());
+        if (swimming && !crouching &&
+            (currentState == CS_JUMPING || currentState == CS_FALLING))
         {
             srcRect = getFrame()->sourceRectangle;
             if (direction == -1)
             {
                 srcRect.w *= -1;
-                dstRect = ScreenRect((int)position.x + size.x, (int)position.y, size.x, size.y);
+                dstRect = ScreenRect((int)position.x + size.x, (int)position.y,
+                                     size.x, size.y);
             }
             else
             {
                 srcRect.x -= srcRect.w;
-                dstRect = ScreenRect((int)position.x - size.x, (int)position.y, size.x, size.y);
+                dstRect = ScreenRect((int)position.x - size.x, (int)position.y,
+                                     size.x, size.y);
             }
-            glTexCoord2d(srcRect.fLeft(), srcRect.fTop());  glVertex2f(dstRect.fLeft(), dstRect.fBottom());
-            glTexCoord2d(srcRect.fRight(), srcRect.fTop()); glVertex2f(dstRect.fRight(), dstRect.fBottom());
-            glTexCoord2d(srcRect.fRight(), srcRect.fBottom());  glVertex2f(dstRect.fRight(), dstRect.fTop());
-            glTexCoord2d(srcRect.fLeft(), srcRect.fBottom());   glVertex2f(dstRect.fLeft(), dstRect.fTop());
+            glTexCoord2d(srcRect.fLeft(), srcRect.fTop());
+            glVertex2f(dstRect.fLeft(), dstRect.fBottom());
+            glTexCoord2d(srcRect.fRight(), srcRect.fTop());
+            glVertex2f(dstRect.fRight(), dstRect.fBottom());
+            glTexCoord2d(srcRect.fRight(), srcRect.fBottom());
+            glVertex2f(dstRect.fRight(), dstRect.fTop());
+            glTexCoord2d(srcRect.fLeft(), srcRect.fBottom());
+            glVertex2f(dstRect.fLeft(), dstRect.fTop());
         }
     }
     glEnd();
@@ -472,7 +474,8 @@ void Player::reinitialize(float x, float y)
     currentState = 0;
     currentAtlasFrame = Point(0, 0);
     lastFrame = Point(0, 0);
-    position = Vector2(x, y);;
+    position = Vector2(x, y);
+    ;
     velocity = Vector2(0.0f, 0.0f);
     lastVelocity = Vector2(0.0f, 0.0f);
     currentFrame = 0;
@@ -494,10 +497,15 @@ void Player::Hit()
         topPadding = storeTopPadding;
 }
 
-void Player::update(WorldRect* pconstraints, TileMap* pcollisionmap, TileMap* pfrontmap, std::vector<TileMap>* pdcollisionmaps, Vector2 world_accel,
-    int elapsedFrames, Camera* pcamera, ScreenRect* pscreen)
+void Player::update(WorldRect* pconstraints, TileMap* pcollisionmap,
+                    TileMap* pfrontmap, std::vector<TileMap>* pdcollisionmaps,
+                    Vector2 world_accel, int elapsedFrames, Camera* pcamera,
+                    ScreenRect* pscreen)
 {
-    int pmovex = (!crouching || (crouching && (currentState == CS_JUMPING || currentState == CS_FALLING))) ? toMove.x : 0;
+    int pmovex = (!crouching || (crouching && (currentState == CS_JUMPING ||
+                                               currentState == CS_FALLING)))
+                     ? toMove.x
+                     : 0;
     if (pmovex != 0)
     {
         if (pmovex == -1)
@@ -527,8 +535,8 @@ void Player::update(WorldRect* pconstraints, TileMap* pcollisionmap, TileMap* pf
                 velocity.x += X_ACCELERATION * pmovex;
         }
     }
-    else if (pmovex == 0 && currentState != CS_FALLING
-        && currentState != CS_JUMPING)
+    else if (pmovex == 0 && currentState != CS_FALLING &&
+             currentState != CS_JUMPING)
     {
         if (velocity.x < 0.0f)
         {
@@ -564,7 +572,7 @@ void Player::update(WorldRect* pconstraints, TileMap* pcollisionmap, TileMap* pf
             velocity.x = max;
     }
 
-    //y
+    // y
     if (toMove.y == -1)
     {
     }
@@ -572,7 +580,7 @@ void Player::update(WorldRect* pconstraints, TileMap* pcollisionmap, TileMap* pf
     {
         if (swimming && canJump)
         {
-            //swim
+            // swim
             currentAnimationFrame = 0;
             currentAtlasFrame.x = 13;
             currentFrame = 0.0;
@@ -584,7 +592,7 @@ void Player::update(WorldRect* pconstraints, TileMap* pcollisionmap, TileMap* pf
         }
         else if (!swimming && jumpCountDown > 0 && currentState != CS_FALLING)
         {
-            //jump
+            // jump
             if (jumpCountDown == JUMPFRAMES)
             {
                 currentAnimationFrame = 0;
@@ -655,7 +663,9 @@ void Player::update(WorldRect* pconstraints, TileMap* pcollisionmap, TileMap* pf
         {
             if (entityIntersectionTest(&world.enemies[i], collision))
             {
-                if (((position.y + bottomPadding) > (world.enemies[i].position.y + world.enemies[i].bottomPadding + 32.0f))) //TOP HIT
+                if (((position.y + bottomPadding) >
+                     (world.enemies[i].position.y +
+                      world.enemies[i].bottomPadding + 32.0f))) // TOP HIT
                 {
                     if (!hitEnemy)
                     {
@@ -664,39 +674,48 @@ void Player::update(WorldRect* pconstraints, TileMap* pcollisionmap, TileMap* pf
                     }
                     switch (world.enemies[i].type)
                     {
-                    case ET_KOOPA:
-                        world.enemies[i].toRemove = true;
-                        world.enemies.push_back(Enemy(ET_SHELL, world.enemies[i].position.x, world.enemies[i].position.y, 64.0f, 128.0f, 0.0f, 0.0f, 12.0f, 12.0f, 72.0f, 8.0f, atlas));
-                        break;
-                    case ET_GOOMBA:
-                        world.enemies[i].isAlive = false;
-                        world.enemies[i].velocity.y = 10.0f;
-                        break;
-                    case ET_SHELL:
-                        if (world.enemies[i].velocity.x)
-                        {
-                            world.enemies[i].velocity.x = 0.0f;
-                        }
-                        else if (!world.enemies[i].cantHitPlayer)
-                        {
-                            world.enemies[i].cantHitPlayer = CANTHITPLAYERFRAMES;
-                            if (position.x + size.x / 2 < world.enemies[i].position.x + world.enemies[i].size.x / 2)
+                        case ET_KOOPA:
+                            world.enemies[i].toRemove = true;
+                            world.enemies.push_back(Enemy(
+                                ET_SHELL, world.enemies[i].position.x,
+                                world.enemies[i].position.y, 64.0f, 128.0f,
+                                0.0f, 0.0f, 12.0f, 12.0f, 72.0f, 8.0f, atlas));
+                            break;
+                        case ET_GOOMBA:
+                            world.enemies[i].isAlive = false;
+                            world.enemies[i].velocity.y = 10.0f;
+                            break;
+                        case ET_SHELL:
+                            if (world.enemies[i].velocity.x)
                             {
-                                world.enemies[i].velocity.x = ENEMY2_X_SPEED;
-                                world.enemies[i].direction = 1;
+                                world.enemies[i].velocity.x = 0.0f;
                             }
-                            else
+                            else if (!world.enemies[i].cantHitPlayer)
                             {
-                                world.enemies[i].velocity.x = -ENEMY2_X_SPEED;
-                                world.enemies[i].direction = -1;
+                                world.enemies[i].cantHitPlayer =
+                                    CANTHITPLAYERFRAMES;
+                                if (position.x + size.x / 2 <
+                                    world.enemies[i].position.x +
+                                        world.enemies[i].size.x / 2)
+                                {
+                                    world.enemies[i].velocity.x =
+                                        ENEMY2_X_SPEED;
+                                    world.enemies[i].direction = 1;
+                                }
+                                else
+                                {
+                                    world.enemies[i].velocity.x =
+                                        -ENEMY2_X_SPEED;
+                                    world.enemies[i].direction = -1;
+                                }
                             }
-                        }
 
-                        break;
+                            break;
                     }
                     if (velocity.y < 0)
                     {
-                        if (input.gamepad.buttonDown(GPB_A) || input.keyboard.keyDown('N'))
+                        if (input.gamepad.buttonDown(GPB_A) ||
+                            input.keyboard.keyDown(SDL_SCANCODE_N))
                         {
                             currentState = CS_JUMPING;
                             jumpCountDown = JUMPFRAMES / 2;
@@ -705,61 +724,75 @@ void Player::update(WorldRect* pconstraints, TileMap* pcollisionmap, TileMap* pf
                         velocity.y = 2 * Y_ACCELERATION;
                     }
                 }
-                else if (!hit) //SIDE HIT
+                else if (!hit) // SIDE HIT
                 {
                     switch (world.enemies[i].type)
                     {
-                    case ET_KOOPA:
-                        Hit();
-                        break;
-                    case ET_GOOMBA:
-                        Hit();
-                        break;
-                    case ET_SHELL:
-                        if ((world.enemies[i].velocity.x > 0 && position.x + size.x / 2 > world.enemies[i].position.x + world.enemies[i].size.x / 2) ||
-                            (world.enemies[i].velocity.x < 0 && position.x + size.x / 2 < world.enemies[i].position.x + world.enemies[i].size.x / 2)) //HURT
-                        {
-                            if (!world.enemies[i].beingHeld)
+                        case ET_KOOPA:
+                            Hit();
+                            break;
+                        case ET_GOOMBA:
+                            Hit();
+                            break;
+                        case ET_SHELL:
+                            if ((world.enemies[i].velocity.x > 0 &&
+                                 position.x + size.x / 2 >
+                                     world.enemies[i].position.x +
+                                         world.enemies[i].size.x / 2) ||
+                                (world.enemies[i].velocity.x < 0 &&
+                                 position.x + size.x / 2 <
+                                     world.enemies[i].position.x +
+                                         world.enemies[i].size.x / 2)) // HURT
                             {
-                                Hit();
-                            }
-                        }
-                        else if (!world.enemies[i].velocity.x) //SAFE
-                        {
-                            if (tryingToHold && !holding) //HOLD
-                            {
-                                holding = world.enemies[i].type;
-                                world.enemies[i].beingHeld = true;
-                                world.enemies[i].pHolder = this;
-                            }
-                            else if (!world.enemies[i].beingHeld) //KICK
-                            {
-                                kicking = 8;
-                                world.enemies[i].cantHitPlayer = CANTHITPLAYERFRAMES;
-                                sound.PlaySfx(SOUND_STOMP);
-                                if (position.x < world.enemies[i].position.x)
+                                if (!world.enemies[i].beingHeld)
                                 {
-                                    world.enemies[i].velocity.x = ENEMY2_X_SPEED;
-                                    world.enemies[i].direction = 1;
-                                }
-                                else
-                                {
-                                    world.enemies[i].velocity.x = -ENEMY2_X_SPEED;
-                                    world.enemies[i].direction = -1;
+                                    Hit();
                                 }
                             }
-                        }
-                        break;
+                            else if (!world.enemies[i].velocity.x) // SAFE
+                            {
+                                if (tryingToHold && !holding) // HOLD
+                                {
+                                    holding = world.enemies[i].type;
+                                    world.enemies[i].beingHeld = true;
+                                    world.enemies[i].pHolder = this;
+                                }
+                                else if (!world.enemies[i].beingHeld) // KICK
+                                {
+                                    kicking = 8;
+                                    world.enemies[i].cantHitPlayer =
+                                        CANTHITPLAYERFRAMES;
+                                    sound.PlaySfx(SOUND_STOMP);
+                                    if (position.x <
+                                        world.enemies[i].position.x)
+                                    {
+                                        world.enemies[i].velocity.x =
+                                            ENEMY2_X_SPEED;
+                                        world.enemies[i].direction = 1;
+                                    }
+                                    else
+                                    {
+                                        world.enemies[i].velocity.x =
+                                            -ENEMY2_X_SPEED;
+                                        world.enemies[i].direction = -1;
+                                    }
+                                }
+                            }
+                            break;
                     }
                 }
             }
         }
     }
 
-    if (hit) hit--;
-    if (hitEnemy) hitEnemy--;
-    if (kicking) kicking--;
-    if (cantSwim) cantSwim--;
+    if (hit)
+        hit--;
+    if (hitEnemy)
+        hitEnemy--;
+    if (kicking)
+        kicking--;
+    if (cantSwim)
+        cantSwim--;
 
     if (!xycol && lxycol && !ycol)
     {
@@ -798,41 +831,46 @@ void Player::resolveTileCollisions(bool dynamic)
     for (int i = 0; i < collidableTiles.tileObjects.size(); i++)
     {
         collision.Initialize();
-        if (tileIntersectionTest(&collidableTiles.tileObjects[i], collision, collidableTiles.tileFlags[i]))
+        if (tileIntersectionTest(&collidableTiles.tileObjects[i], collision,
+                                 collidableTiles.tileFlags[i]))
         {
             totalCollisions++;
             area = intersectionArea(&collidableTiles.tileObjects[i]);
-            std::string axis = (collision.topCollision || collision.bottomCollision) ? "y" : "x";
-            axis = (collision.leftSlopeCollision || collision.rightSlopeCollision) ? "xy" : axis;
+            std::string axis =
+                (collision.topCollision || collision.bottomCollision) ? "y"
+                                                                      : "x";
+            axis =
+                (collision.leftSlopeCollision || collision.rightSlopeCollision)
+                    ? "xy"
+                    : axis;
 
             if (area > 0.0f)
             {
-                if (!dynamic && !(collision.flags == CT_TOP) && !axis.compare("y"))
+                if (!dynamic && !(collision.flags == CT_TOP) &&
+                    !axis.compare("y"))
                     area_sum += area;
-                collisionInfos.push_back(CollisionInfo(area, axis, collidableTiles.tileIndices[i]));
-                collisions.push_back(Collision(collision.minimumTranslation, area,
-                    collision.leftCollision,
-                    collision.rightCollision,
-                    collision.bottomCollision,
-                    collision.topCollision,
-                    collision.leftSlopeCollision,
+                collisionInfos.push_back(
+                    CollisionInfo(area, axis, collidableTiles.tileIndices[i]));
+                collisions.push_back(Collision(
+                    collision.minimumTranslation, area, collision.leftCollision,
+                    collision.rightCollision, collision.bottomCollision,
+                    collision.topCollision, collision.leftSlopeCollision,
                     collision.rightSlopeCollision,
                     collidableTiles.tileObjects[i].position.x,
-                    collidableTiles.tileObjects[i].position.y,
-                    collision.flags,
-                    collision.centerInBetween,
-                    collidableTiles.tileIndices[i], collidableTiles.velocity));
+                    collidableTiles.tileObjects[i].position.y, collision.flags,
+                    collision.centerInBetween, collidableTiles.tileIndices[i],
+                    collidableTiles.velocity));
             }
         }
     }
 
-    //descending sort
+    // descending sort
     std::sort(collisions.begin(), collisions.end(),
-        [](Collision const & a, Collision const & b) -> bool
-    { return a.area > b.area; });
-    int newcount = collisions.size() > 2 ?
-        static_cast<int>(collisions.size() - 1) :
-        static_cast<int>(collisions.size());
+              [](Collision const& a, Collision const& b) -> bool
+              { return a.area > b.area; });
+    int newcount = collisions.size() > 2
+                       ? static_cast<int>(collisions.size() - 1)
+                       : static_cast<int>(collisions.size());
     for (int i = 0; i < newcount; i++)
     {
         if (collisions[i].leftCollision || collisions[i].rightCollision)
@@ -845,7 +883,8 @@ void Player::resolveTileCollisions(bool dynamic)
             if (collisions[i].area > bestYCollision.area)
                 bestYCollision = collisions[i];
         }
-        else if (collisions[i].leftSlopeCollision || collisions[i].rightSlopeCollision)
+        else if (collisions[i].leftSlopeCollision ||
+                 collisions[i].rightSlopeCollision)
         {
             if (collisions[i].centerInBetween > bestXYCollision.centerInBetween)
                 bestXYCollision = collisions[i];
@@ -860,17 +899,21 @@ void Player::resolveTileCollisions(bool dynamic)
     xycol = 0;
     scol = false;
 
-    Point xtile = Point(bestXCollision.x / world.level.layer[2].w_tileSize.x, bestXCollision.y / world.level.layer[2].w_tileSize.y);
-    Point ytile = Point(bestYCollision.x / world.level.layer[2].w_tileSize.x, bestYCollision.y / world.level.layer[2].w_tileSize.y);
+    Point xtile = Point(bestXCollision.x / world.level.layer[2].w_tileSize.x,
+                        bestXCollision.y / world.level.layer[2].w_tileSize.y);
+    Point ytile = Point(bestYCollision.x / world.level.layer[2].w_tileSize.x,
+                        bestYCollision.y / world.level.layer[2].w_tileSize.y);
 
-    if (bestXCollision.x == bestYCollision.x && ytile.y == xtile.y - 2 && !xycol && xtile.x)
+    if (bestXCollision.x == bestYCollision.x && ytile.y == xtile.y - 2 &&
+        !xycol && xtile.x)
     {
         isSquished = true;
     }
 
-    if (bestXYCollision.centerInBetween && bestXYCollision.minimumTranslation.y > 0.0f &&
-        (velocity.y <= 0) &&
-        (lastPosition.y + tileheight * 0.5 >= (position.y + bestXYCollision.minimumTranslation.y))) //XY
+    if (bestXYCollision.centerInBetween &&
+        bestXYCollision.minimumTranslation.y > 0.0f && (velocity.y <= 0) &&
+        (lastPosition.y + tileheight * 0.5 >=
+         (position.y + bestXYCollision.minimumTranslation.y))) // XY
     {
         if (bestXYCollision.flags & CT_0_TO_15)
             xycol = 2;
@@ -882,13 +925,16 @@ void Player::resolveTileCollisions(bool dynamic)
         velocity.y = 0.0f;
     }
 
-    if (bestXCollision.x != bestYCollision.x && !xycol)//y
+    if (bestXCollision.x != bestYCollision.x && !xycol) // y
     {
-        if ((bestYCollision.topCollision && velocity.y <= 0) || isSquished) //land
+        if ((bestYCollision.topCollision && velocity.y <= 0) ||
+            isSquished) // land
         {
-            if (((bestYCollision.flags & CT_TOP) && !(bestYCollision.flags & CT_BOTTOM) &&
-                !(bestYCollision.flags & CT_SPECIAL)) &&
-                (lastPosition.y < (position.y + bestYCollision.minimumTranslation.y)))
+            if (((bestYCollision.flags & CT_TOP) &&
+                 !(bestYCollision.flags & CT_BOTTOM) &&
+                 !(bestYCollision.flags & CT_SPECIAL)) &&
+                (lastPosition.y <
+                 (position.y + bestYCollision.minimumTranslation.y)))
                 return;
 
             ycol = true;
@@ -906,7 +952,7 @@ void Player::resolveTileCollisions(bool dynamic)
                 position.x += bestYCollision.velocity.x;
             }
         }
-        else if (bestYCollision.bottomCollision && velocity.y >= 0) //hit head
+        else if (bestYCollision.bottomCollision && velocity.y >= 0) // hit head
         {
             ycol = true;
             numCollisions++;
@@ -918,28 +964,34 @@ void Player::resolveTileCollisions(bool dynamic)
             currentState = CS_FALLING;
             velocity.y = 0.0f;
 
-            if (world.level.layer[2].imageLayer[ytile.x][ytile.y].atileIndex == 240 && !world.level.layer[2].imageLayer[ytile.x][ytile.y].bounce)
+            if (world.level.layer[2].imageLayer[ytile.x][ytile.y].atileIndex ==
+                    240 &&
+                !world.level.layer[2].imageLayer[ytile.x][ytile.y].bounce)
             {
                 score++;
                 world.level.layer[2].imageLayer[ytile.x][ytile.y].value--;
-                world.level.layer[2].imageLayer[ytile.x][ytile.y].bounce = 10.0f;
+                world.level.layer[2].imageLayer[ytile.x][ytile.y].bounce =
+                    10.0f;
                 sound.PlaySfx(SOUND_COIN);
             }
         }
     }
 
-    if (bestXCollision.y != bestYCollision.y && !isSquished)//x
+    if (bestXCollision.y != bestYCollision.y && !isSquished) // x
     {
         if (bestXCollision.leftCollision || bestXCollision.rightCollision)
         {
             xcol = true;
             numCollisions++;
             if (bestXCollision.minimumTranslation.x > 0)
-                bestXCollision.minimumTranslation.x = min(bestXCollision.minimumTranslation.x, 4.0f);
+                bestXCollision.minimumTranslation.x =
+                    std::min<float>(bestXCollision.minimumTranslation.x, 4.0f);
             else
-                bestXCollision.minimumTranslation.x = max(bestXCollision.minimumTranslation.x, -4.0f);
+                bestXCollision.minimumTranslation.x =
+                    std::max<float>(bestXCollision.minimumTranslation.x, -4.0f);
             position += bestXCollision.minimumTranslation;
-            if ((velocity.x > 0 && bestXCollision.leftCollision) || (velocity.x < 0 && bestXCollision.rightCollision))
+            if ((velocity.x > 0 && bestXCollision.leftCollision) ||
+                (velocity.x < 0 && bestXCollision.rightCollision))
                 velocity.x = 0.0f;
         }
     }
@@ -951,7 +1003,7 @@ void Player::resolveTileCollisions(bool dynamic)
 
     if (isSquished)
     {
-        position.y += 2.0f; //reverse gravity
+        position.y += 2.0f; // reverse gravity
         ycol = true;
         velocity.y = 0.0f;
         landing();
@@ -961,16 +1013,20 @@ void Player::resolveTileCollisions(bool dynamic)
 
 void Player::resolveItemCollisions(TileMap* pmap)
 {
-    Point BottomLeft = worldToTile(position + Vector2(leftPadding, bottomPadding) - pmap->position, pmap->w_tileSize);
-    Point TopRight = worldToTile(position - Vector2(rightPadding, topPadding) + size - pmap->position, pmap->w_tileSize);
+    Point BottomLeft = worldToTile(
+        position + Vector2(leftPadding, bottomPadding) - pmap->position,
+        pmap->w_tileSize);
+    Point TopRight = worldToTile(position - Vector2(rightPadding, topPadding) +
+                                     size - pmap->position,
+                                 pmap->w_tileSize);
 
     Point min;
     Point max;
 
-    min.x = max(0, BottomLeft.x - 1);
-    min.y = max(0, BottomLeft.y - 1);
-    max.x = min(TopRight.x + 2, pmap->t_mapSize.x);
-    max.y = min(TopRight.y + 2, pmap->t_mapSize.y);
+    min.x = std::max(0, BottomLeft.x - 1);
+    min.y = std::max(0, BottomLeft.y - 1);
+    max.x = std::min(TopRight.x + 2, pmap->t_mapSize.x);
+    max.y = std::min(TopRight.y + 2, pmap->t_mapSize.y);
 
     float tx, ty;
     float area;
@@ -980,7 +1036,9 @@ void Player::resolveItemCollisions(TileMap* pmap)
         {
             tx = (float)(x * pmap->w_tileSize.x) + pmap->position.x;
             ty = (float)(y * pmap->w_tileSize.y) + pmap->position.y;
-            StaticObject tile = StaticObject(Vector2(tx, ty), Vector2(pmap->w_tileSize.x, pmap->w_tileSize.y));
+            StaticObject tile =
+                StaticObject(Vector2(tx, ty),
+                             Vector2(pmap->w_tileSize.x, pmap->w_tileSize.y));
             area = intersectionArea(&tile);
             if (area)
             {
@@ -989,14 +1047,17 @@ void Player::resolveItemCollisions(TileMap* pmap)
                     score++;
                     for (int i = 0; i < pmap->animatedTiles.size(); i++)
                     {
-                        if (pmap->animatedTiles[i].position.x == x && pmap->animatedTiles[i].position.y == y)
+                        if (pmap->animatedTiles[i].position.x == x &&
+                            pmap->animatedTiles[i].position.y == y)
                             remove(pmap->animatedTiles, i);
                     }
                     pmap->imageLayer[x][y].atileIndex = 0;
                     sound.PlaySfx(SOUND_COIN);
                     pmap->imageLayer[x][y].tileIndex = -1;
                 }
-                else if (position.y < ty + pmap->w_tileSize.y / 4 && (pmap->imageLayer[x][y].atileIndex == 246 || pmap->imageLayer[x][y].tileIndex == 144)) //water
+                else if (position.y < ty + pmap->w_tileSize.y / 4 &&
+                         (pmap->imageLayer[x][y].atileIndex == 246 ||
+                          pmap->imageLayer[x][y].tileIndex == 144)) // water
                 {
                     swimming = true;
                 }
@@ -1014,11 +1075,13 @@ void Entity::landing()
         currentState = CS_MOVINGRIGHT;
     else if (velocity.x < 0)
         currentState = CS_MOVINGLEFT;
-    else if (!toMove.x || currentState == CS_FALLING || currentState == CS_JUMPING)
+    else if (!toMove.x || currentState == CS_FALLING ||
+             currentState == CS_JUMPING)
         currentState = CS_IDLE;
 }
 
-void Entity::advanceAnimationFrame(int elapsedframes, float delaydivider, int endframe, bool loop)
+void Entity::advanceAnimationFrame(int elapsedframes, float delaydivider,
+                                   int endframe, bool loop)
 {
     currentFrame += elapsedframes;
     if (currentFrame > getFrame()->frameDelay / delaydivider)
@@ -1034,10 +1097,12 @@ void Player::resolveFrame(int elapsedframes)
 {
     lastFrame = currentAtlasFrame;
 
-    if (velocity.y < 0) currentState = CS_FALLING;
+    if (velocity.y < 0)
+        currentState = CS_FALLING;
 
     float delaydivider = 1.0f;
-    int endframe = static_cast<int>(frames->animations[animationState].size() - 1);
+    int endframe =
+        static_cast<int>(frames->animations[animationState].size() - 1);
     bool loop = false;
     bool advance = true;
 
@@ -1045,7 +1110,8 @@ void Player::resolveFrame(int elapsedframes)
     {
         setAnimationState(P_KICK, 0);
     }
-    else if (lookingUp && holding && currentState != CS_MOVINGLEFT && currentState != CS_MOVINGRIGHT)
+    else if (lookingUp && holding && currentState != CS_MOVINGLEFT &&
+             currentState != CS_MOVINGRIGHT)
     {
         setAnimationState(P_HOLD_LOOK, 0);
     }
@@ -1057,75 +1123,80 @@ void Player::resolveFrame(int elapsedframes)
     {
         switch (currentState)
         {
-        case CS_IDLE:
-            if (holding)
-            {
-                setAnimationState(P_HOLD_IDLE, 0);
-            }
-            else
-            {
-                setAnimationState(P_IDLE, 0);
-            }
-            break;
-
-        case CS_MOVINGLEFT:case CS_MOVINGRIGHT:
-            if (!holding)
-            {
-                setAnimationState(P_MOVE, currentAnimationFrame);
-            }
-            else
-            {
-                setAnimationState(P_HOLD_MOVE, currentAnimationFrame);
-            }
-            delaydivider = (1.0f + (2.0f*(int)isRunning));
-            advanceAnimationFrame(elapsedframes, delaydivider, endframe, true);
-            break;
-
-        case CS_JUMPING:
-            if (!holding)
-            {
-                if (swimming)
+            case CS_IDLE:
+                if (holding)
                 {
-                    setAnimationState(P_SWIM, currentAnimationFrame);
-                    advanceAnimationFrame(elapsedframes, delaydivider, endframe, false);
+                    setAnimationState(P_HOLD_IDLE, 0);
                 }
                 else
                 {
-                    setAnimationState(P_JUMP, currentAnimationFrame);
-                    advanceAnimationFrame(elapsedframes, delaydivider, endframe, false);
+                    setAnimationState(P_IDLE, 0);
                 }
-            }
-            else
-            {
-                setAnimationState(P_HOLD_JUMP, (health < 2) ? 0 : 1);
-            }
-            break;
+                break;
 
-        case CS_FALLING:
-            if (!holding)
-            {
-                if (swimming)
+            case CS_MOVINGLEFT:
+            case CS_MOVINGRIGHT:
+                if (!holding)
                 {
-                    setAnimationState(P_SWIM, currentAnimationFrame);
-                    advanceAnimationFrame(elapsedframes, delaydivider, endframe, false);
+                    setAnimationState(P_MOVE, currentAnimationFrame);
                 }
                 else
                 {
-                    setAnimationState(P_FALL, 0);
+                    setAnimationState(P_HOLD_MOVE, currentAnimationFrame);
                 }
-            }
-            else
-            {
-                setAnimationState(P_HOLD_JUMP, (health < 2) ? 0 : 1);
-            }
-            break;
+                delaydivider = (1.0f + (2.0f * (int)isRunning));
+                advanceAnimationFrame(elapsedframes, delaydivider, endframe,
+                                      true);
+                break;
+
+            case CS_JUMPING:
+                if (!holding)
+                {
+                    if (swimming)
+                    {
+                        setAnimationState(P_SWIM, currentAnimationFrame);
+                        advanceAnimationFrame(elapsedframes, delaydivider,
+                                              endframe, false);
+                    }
+                    else
+                    {
+                        setAnimationState(P_JUMP, currentAnimationFrame);
+                        advanceAnimationFrame(elapsedframes, delaydivider,
+                                              endframe, false);
+                    }
+                }
+                else
+                {
+                    setAnimationState(P_HOLD_JUMP, (health < 2) ? 0 : 1);
+                }
+                break;
+
+            case CS_FALLING:
+                if (!holding)
+                {
+                    if (swimming)
+                    {
+                        setAnimationState(P_SWIM, currentAnimationFrame);
+                        advanceAnimationFrame(elapsedframes, delaydivider,
+                                              endframe, false);
+                    }
+                    else
+                    {
+                        setAnimationState(P_FALL, 0);
+                    }
+                }
+                else
+                {
+                    setAnimationState(P_HOLD_JUMP, (health < 2) ? 0 : 1);
+                }
+                break;
         }
     }
-    //char* anims[16] = {"idle","move","jump","fall","kick","swim","duck","attack","slide","hold look","hold idle","hold move","hold jump","","","",};
-    //cout<<"state: "<<anims[animationState]<<"  frame: "<<currentAnimationFrame<<endl;
 }
 
-Enemy::Enemy(ENEMY_TYPE enemy_type, float x, float y, float w, float h, float ivx, float ivy, float pl, float pr, float pt, float pb, TileAtlas* ptexatlas)
+Enemy::Enemy(ENEMY_TYPE enemy_type, float x, float y, float w, float h,
+             float ivx, float ivy, float pl, float pr, float pt, float pb,
+             TileAtlas* ptexatlas)
 {
     beingHeld = false;
     cantHitPlayer = CANTHITPLAYERFRAMES;
@@ -1151,28 +1222,28 @@ Enemy::Enemy(ENEMY_TYPE enemy_type, float x, float y, float w, float h, float iv
 
     switch (type)
     {
-    case ET_KOOPA:
-        currentAtlasFrame = Point(0, 3);
-        currentState = CS_MOVINGRIGHT;
-        break;
-    case ET_GOOMBA:
-        currentAtlasFrame = Point(0, 4);
-        currentState = CS_MOVINGRIGHT;
-        break;
-    case ET_SHELL:
-        currentAtlasFrame = Point(2, 3);
-        currentState = CS_IDLE;
-        break;
+        case ET_KOOPA:
+            currentAtlasFrame = Point(0, 3);
+            currentState = CS_MOVINGRIGHT;
+            break;
+        case ET_GOOMBA:
+            currentAtlasFrame = Point(0, 4);
+            currentState = CS_MOVINGRIGHT;
+            break;
+        case ET_SHELL:
+            currentAtlasFrame = Point(2, 3);
+            currentState = CS_IDLE;
+            break;
     }
 };
 
-Enemy::~Enemy()
-{
-};
+Enemy::~Enemy(){};
 
 void Enemy::draw(Camera* camera)
 {
-    ScreenRect srcRect = atlas->sourceRectangles[currentAtlasFrame.x + (currentAtlasFrame.y)*atlas->frames.x];
+    ScreenRect srcRect =
+        atlas->sourceRectangles[currentAtlasFrame.x +
+                                (currentAtlasFrame.y) * atlas->frames.x];
     if (direction == -1)
     {
         srcRect.x += atlas->textureFrameSize.x;
@@ -1187,16 +1258,22 @@ void Enemy::draw(Camera* camera)
     glBindTexture(GL_TEXTURE_2D, *(atlas->texture));
     glBegin(GL_QUADS);
     {
-        glTexCoord2d(srcRect.fLeft(), srcRect.fTop());  glVertex2f(dstRect.fLeft(), dstRect.fBottom());
-        glTexCoord2d(srcRect.fRight(), srcRect.fTop()); glVertex2f(dstRect.fRight(), dstRect.fBottom());
-        glTexCoord2d(srcRect.fRight(), srcRect.fBottom());  glVertex2f(dstRect.fRight(), dstRect.fTop());
-        glTexCoord2d(srcRect.fLeft(), srcRect.fBottom());   glVertex2f(dstRect.fLeft(), dstRect.fTop());
+        glTexCoord2d(srcRect.fLeft(), srcRect.fTop());
+        glVertex2f(dstRect.fLeft(), dstRect.fBottom());
+        glTexCoord2d(srcRect.fRight(), srcRect.fTop());
+        glVertex2f(dstRect.fRight(), dstRect.fBottom());
+        glTexCoord2d(srcRect.fRight(), srcRect.fBottom());
+        glVertex2f(dstRect.fRight(), dstRect.fTop());
+        glTexCoord2d(srcRect.fLeft(), srcRect.fBottom());
+        glVertex2f(dstRect.fLeft(), dstRect.fTop());
     }
     glEnd();
 }
 
-void Enemy::update(WorldRect* pconstraints, TileMap* pcollisionmap, std::vector<TileMap>* pdcollisionmaps, Vector2 world_accel,
-    int elapsedFrames, Camera* pcamera, ScreenRect* pscreen, int index)
+void Enemy::update(WorldRect* pconstraints, TileMap* pcollisionmap,
+                   std::vector<TileMap>* pdcollisionmaps, Vector2 world_accel,
+                   int elapsedFrames, Camera* pcamera, ScreenRect* pscreen,
+                   int index)
 {
     lastPosition = position;
     lastVelocity = velocity;
@@ -1205,11 +1282,13 @@ void Enemy::update(WorldRect* pconstraints, TileMap* pcollisionmap, std::vector<
     {
         if (pHolder->direction == 1)
         {
-            position = Vector2(pHolder->position.x + pHolder->size.x - 24.0f, pHolder->position.y + 24.0f);
+            position = Vector2(pHolder->position.x + pHolder->size.x - 24.0f,
+                               pHolder->position.y + 24.0f);
         }
         else
         {
-            position = Vector2(pHolder->position.x - size.x + 24.0f, pHolder->position.y + 24.0f);
+            position = Vector2(pHolder->position.x - size.x + 24.0f,
+                               pHolder->position.y + 24.0f);
         }
     }
     else
@@ -1218,7 +1297,7 @@ void Enemy::update(WorldRect* pconstraints, TileMap* pcollisionmap, std::vector<
         {
             if (jumpCountDown > 0)
             {
-                //JUMP
+                // JUMP
                 if (jumpCountDown == JUMPFRAMES)
                 {
                     currentAtlasFrame.x = 0;
@@ -1242,7 +1321,8 @@ void Enemy::update(WorldRect* pconstraints, TileMap* pcollisionmap, std::vector<
             }
         }
 
-        world_accel.y = (type == ET_SHELL) ? world_accel.y*0.5f : world_accel.y;
+        world_accel.y =
+            (type == ET_SHELL) ? world_accel.y * 0.5f : world_accel.y;
         velocity += world_accel;
 
         if (dcol)
@@ -1250,7 +1330,8 @@ void Enemy::update(WorldRect* pconstraints, TileMap* pcollisionmap, std::vector<
         else if (xycol || scol)
             velocity.y += -S_GRAVITY;
 
-        float max_y_v = (type == ET_SHELL) ? MAX_SHELL_Y_VELOCITY : MAX_Y_VELOCITY;
+        float max_y_v =
+            (type == ET_SHELL) ? MAX_SHELL_Y_VELOCITY : MAX_Y_VELOCITY;
         if (velocity.y > max_y_v)
             velocity.y = max_y_v;
         if (velocity.y < -MAX_Y_VELOCITY)
@@ -1288,57 +1369,61 @@ void Enemy::update(WorldRect* pconstraints, TileMap* pcollisionmap, std::vector<
                         sound.PlaySfx(SOUND_STOMP);
                         switch (world.enemies[i].type)
                         {
-                        case ET_KOOPA:
-                            world.enemies[i].currentAtlasFrame = Point(4, 3);
-                            world.enemies[i].isAlive = false;
-                            world.enemies[i].velocity.y = 10.0f;
-                            world.enemies[i].velocity.x = direction * 8.0f;
-                            if (beingHeld)
-                            {
-                                beingHeld = false;
-                                pHolder->holding = 0;
-                                isAlive = false;
-                                velocity.y = 10.0f;
-                                velocity.x = -direction * 8.0f;
-                            }
-                            break;
-                        case ET_GOOMBA:
-                            world.enemies[i].isAlive = false;
-                            world.enemies[i].velocity.y = 10.0f;
-                            world.enemies[i].velocity.x = direction * 8.0f;
-                            if (beingHeld)
-                            {
-                                beingHeld = false;
-                                pHolder->holding = 0;
-                                isAlive = false;
-                                velocity.y = 10.0f;
-                                velocity.x = -direction * 8.0f;
-                            }
-                            break;
-                        case ET_SHELL:
-                            //*
-                            world.enemies[i].isAlive = false;
-                            world.enemies[i].velocity.y = 10.0f;
-                            int dir = (world.enemies[i].position.x > position.x) ? 1 : -1;
-                            world.enemies[i].velocity.x = dir * 8.0f;
-                            if (world.enemies[i].beingHeld)
-                            {
-                                world.enemies[i].beingHeld = false;
-                                world.enemies[i].pHolder->holding = 0;
-                                isAlive = false;
-                                velocity.y = 10.0f;
-                                velocity.x = -dir * 8.0f;
-                            }
-                            if (beingHeld)
-                            {
-                                beingHeld = false;
-                                pHolder->holding = 0;
-                                isAlive = false;
-                                velocity.y = 10.0f;
-                                velocity.x = -dir * 8.0f;
-                            }
-                            //*/
-                            break;
+                            case ET_KOOPA:
+                                world.enemies[i].currentAtlasFrame =
+                                    Point(4, 3);
+                                world.enemies[i].isAlive = false;
+                                world.enemies[i].velocity.y = 10.0f;
+                                world.enemies[i].velocity.x = direction * 8.0f;
+                                if (beingHeld)
+                                {
+                                    beingHeld = false;
+                                    pHolder->holding = 0;
+                                    isAlive = false;
+                                    velocity.y = 10.0f;
+                                    velocity.x = -direction * 8.0f;
+                                }
+                                break;
+                            case ET_GOOMBA:
+                                world.enemies[i].isAlive = false;
+                                world.enemies[i].velocity.y = 10.0f;
+                                world.enemies[i].velocity.x = direction * 8.0f;
+                                if (beingHeld)
+                                {
+                                    beingHeld = false;
+                                    pHolder->holding = 0;
+                                    isAlive = false;
+                                    velocity.y = 10.0f;
+                                    velocity.x = -direction * 8.0f;
+                                }
+                                break;
+                            case ET_SHELL:
+                                //*
+                                world.enemies[i].isAlive = false;
+                                world.enemies[i].velocity.y = 10.0f;
+                                int dir =
+                                    (world.enemies[i].position.x > position.x)
+                                        ? 1
+                                        : -1;
+                                world.enemies[i].velocity.x = dir * 8.0f;
+                                if (world.enemies[i].beingHeld)
+                                {
+                                    world.enemies[i].beingHeld = false;
+                                    world.enemies[i].pHolder->holding = 0;
+                                    isAlive = false;
+                                    velocity.y = 10.0f;
+                                    velocity.x = -dir * 8.0f;
+                                }
+                                if (beingHeld)
+                                {
+                                    beingHeld = false;
+                                    pHolder->holding = 0;
+                                    isAlive = false;
+                                    velocity.y = 10.0f;
+                                    velocity.x = -dir * 8.0f;
+                                }
+                                //*/
+                                break;
                         }
                     }
                 }
@@ -1348,7 +1433,8 @@ void Enemy::update(WorldRect* pconstraints, TileMap* pcollisionmap, std::vector<
         resolveFrame(elapsedFrames);
     }
 
-    if (cantHitPlayer) cantHitPlayer--;
+    if (cantHitPlayer)
+        cantHitPlayer--;
 
     if (position.y + size.y < pconstraints->y)
     {
@@ -1388,39 +1474,43 @@ void Enemy::resolveTileCollisions(bool dynamic)
     for (int i = 0; i < collidableTiles.tileObjects.size(); i++)
     {
         collision.Initialize();
-        if (tileIntersectionTest(&collidableTiles.tileObjects[i], collision, collidableTiles.tileFlags[i]))
+        if (tileIntersectionTest(&collidableTiles.tileObjects[i], collision,
+                                 collidableTiles.tileFlags[i]))
         {
             totalCollisions++;
             area = intersectionArea(&collidableTiles.tileObjects[i]);
-            std::string axis = (collision.topCollision || collision.bottomCollision) ? "y" : "x";
-            axis = (collision.leftSlopeCollision || collision.rightSlopeCollision) ? "xy" : axis;
+            std::string axis =
+                (collision.topCollision || collision.bottomCollision) ? "y"
+                                                                      : "x";
+            axis =
+                (collision.leftSlopeCollision || collision.rightSlopeCollision)
+                    ? "xy"
+                    : axis;
 
             if (area > 0.0f)
             {
-                collisionInfos.push_back(CollisionInfo(area, axis, collidableTiles.tileIndices[i]));
-                collisions.push_back(Collision(collision.minimumTranslation, area,
-                    collision.leftCollision,
-                    collision.rightCollision,
-                    collision.bottomCollision,
-                    collision.topCollision,
-                    collision.leftSlopeCollision,
+                collisionInfos.push_back(
+                    CollisionInfo(area, axis, collidableTiles.tileIndices[i]));
+                collisions.push_back(Collision(
+                    collision.minimumTranslation, area, collision.leftCollision,
+                    collision.rightCollision, collision.bottomCollision,
+                    collision.topCollision, collision.leftSlopeCollision,
                     collision.rightSlopeCollision,
                     collidableTiles.tileObjects[i].position.x,
-                    collidableTiles.tileObjects[i].position.y,
-                    collision.flags,
-                    collision.centerInBetween,
-                    collidableTiles.tileIndices[i], collidableTiles.velocity));
+                    collidableTiles.tileObjects[i].position.y, collision.flags,
+                    collision.centerInBetween, collidableTiles.tileIndices[i],
+                    collidableTiles.velocity));
             }
         }
     }
 
     std::sort(collisions.begin(), collisions.end(),
-        [](Collision const & a, Collision const & b) -> bool
-    { return a.area > b.area; });
+              [](Collision const& a, Collision const& b) -> bool
+              { return a.area > b.area; });
 
-    int newcount = collisions.size() > 2 ?
-        static_cast<int>(collisions.size() - 1) :
-        static_cast<int>(collisions.size());
+    int newcount = collisions.size() > 2
+                       ? static_cast<int>(collisions.size() - 1)
+                       : static_cast<int>(collisions.size());
     for (int i = 0; i < newcount; i++)
     {
         if (collisions[i].leftCollision || collisions[i].rightCollision)
@@ -1433,7 +1523,8 @@ void Enemy::resolveTileCollisions(bool dynamic)
             if (collisions[i].area > bestYCollision.area)
                 bestYCollision = collisions[i];
         }
-        else if (collisions[i].leftSlopeCollision || collisions[i].rightSlopeCollision)
+        else if (collisions[i].leftSlopeCollision ||
+                 collisions[i].rightSlopeCollision)
         {
             if (collisions[i].centerInBetween > bestXYCollision.centerInBetween)
                 bestXYCollision = collisions[i];
@@ -1446,38 +1537,49 @@ void Enemy::resolveTileCollisions(bool dynamic)
     xycol = 0;
     scol = false;
 
-    Point ytile = Point(bestYCollision.x / world.level.layer[2].w_tileSize.x, bestYCollision.y / world.level.layer[2].w_tileSize.y);
-    Point xtile = Point(bestXCollision.x / world.level.layer[2].w_tileSize.x, bestXCollision.y / world.level.layer[2].w_tileSize.y);
+    Point ytile = Point(bestYCollision.x / world.level.layer[2].w_tileSize.x,
+                        bestYCollision.y / world.level.layer[2].w_tileSize.y);
+    Point xtile = Point(bestXCollision.x / world.level.layer[2].w_tileSize.x,
+                        bestXCollision.y / world.level.layer[2].w_tileSize.y);
 
-    if (bestXCollision.y != bestYCollision.y) //x
+    if (bestXCollision.y != bestYCollision.y) // x
     {
         if (bestXCollision.leftCollision || bestXCollision.rightCollision)
         {
             xcol = true;
             numCollisions++;
             if (bestXCollision.minimumTranslation.x > 0)
-                bestXCollision.minimumTranslation.x = min(bestXCollision.minimumTranslation.x, 4.0f);
+                bestXCollision.minimumTranslation.x =
+                    std::min<float>(bestXCollision.minimumTranslation.x, 4.0f);
             else
-                bestXCollision.minimumTranslation.x = max(bestXCollision.minimumTranslation.x, -4.0f);
+                bestXCollision.minimumTranslation.x =
+                    std::max<float>(bestXCollision.minimumTranslation.x, -4.0f);
             position += bestXCollision.minimumTranslation;
-            if ((velocity.x > 0 && bestXCollision.leftCollision) || (velocity.x < 0 && bestXCollision.rightCollision))
+            if ((velocity.x > 0 && bestXCollision.leftCollision) ||
+                (velocity.x < 0 && bestXCollision.rightCollision))
             {
-                if (type == ET_SHELL) sound.PlaySfx(SOUND_THUD);
+                if (type == ET_SHELL)
+                    sound.PlaySfx(SOUND_THUD);
                 direction *= -1;
                 velocity.x *= -1.0f;
-                if (world.level.layer[2].imageLayer[xtile.x][xtile.y].atileIndex == 240 && !world.level.layer[2].imageLayer[xtile.x][xtile.y].bounce)
+                if (world.level.layer[2]
+                            .imageLayer[xtile.x][xtile.y]
+                            .atileIndex == 240 &&
+                    !world.level.layer[2].imageLayer[xtile.x][xtile.y].bounce)
                 {
                     world.level.layer[2].imageLayer[xtile.x][xtile.y].value--;
-                    world.level.layer[2].imageLayer[xtile.x][xtile.y].bounce = 10.0f;
+                    world.level.layer[2].imageLayer[xtile.x][xtile.y].bounce =
+                        10.0f;
                     sound.PlaySfx(SOUND_COIN);
                 }
             }
         }
     }
 
-    if (bestXYCollision.centerInBetween && bestXYCollision.minimumTranslation.y > 0.0f &&
-        (velocity.y <= 0) &&
-        (lastPosition.y + tileheight * 0.5 >= (position.y + bestXYCollision.minimumTranslation.y))) //XY
+    if (bestXYCollision.centerInBetween &&
+        bestXYCollision.minimumTranslation.y > 0.0f && (velocity.y <= 0) &&
+        (lastPosition.y + tileheight * 0.5 >=
+         (position.y + bestXYCollision.minimumTranslation.y))) // XY
     {
         if (bestXYCollision.flags & CT_0_TO_15)
             xycol = 2;
@@ -1489,13 +1591,15 @@ void Enemy::resolveTileCollisions(bool dynamic)
         velocity.y = 0.0f;
     }
 
-    if (bestXCollision.x != bestYCollision.x && !xycol) //y
+    if (bestXCollision.x != bestYCollision.x && !xycol) // y
     {
-        if (bestYCollision.topCollision && velocity.y <= 0) //ENEMY LAND
+        if (bestYCollision.topCollision && velocity.y <= 0) // ENEMY LAND
         {
-            if (((bestYCollision.flags & CT_TOP) && !(bestYCollision.flags & CT_BOTTOM) &&
-                !(bestYCollision.flags & CT_SPECIAL)) &&
-                (lastPosition.y < (position.y + bestYCollision.minimumTranslation.y)))
+            if (((bestYCollision.flags & CT_TOP) &&
+                 !(bestYCollision.flags & CT_BOTTOM) &&
+                 !(bestYCollision.flags & CT_SPECIAL)) &&
+                (lastPosition.y <
+                 (position.y + bestYCollision.minimumTranslation.y)))
                 return;
 
             ycol = true;
@@ -1511,7 +1615,8 @@ void Enemy::resolveTileCollisions(bool dynamic)
                 position.x += bestYCollision.velocity.x;
             }
         }
-        else if (bestYCollision.bottomCollision && velocity.y >= 0) //ENEMY HIT HEAD
+        else if (bestYCollision.bottomCollision &&
+                 velocity.y >= 0) // ENEMY HIT HEAD
         {
             ycol = true;
             numCollisions++;
@@ -1519,18 +1624,25 @@ void Enemy::resolveTileCollisions(bool dynamic)
             velocity.y = 0.0f;
             currentState = CS_FALLING;
             sound.PlaySfx(SOUND_THUD);
-            if (world.level.layer[2].imageLayer[ytile.x][ytile.y].atileIndex == 240 && !world.level.layer[2].imageLayer[ytile.x][ytile.y].bounce)
+            if (world.level.layer[2].imageLayer[ytile.x][ytile.y].atileIndex ==
+                    240 &&
+                !world.level.layer[2].imageLayer[ytile.x][ytile.y].bounce)
             {
                 world.level.layer[2].imageLayer[ytile.x][ytile.y].value--;
-                world.level.layer[2].imageLayer[ytile.x][ytile.y].bounce = 10.0f;
+                world.level.layer[2].imageLayer[ytile.x][ytile.y].bounce =
+                    10.0f;
                 sound.PlaySfx(SOUND_COIN);
             }
         }
         if (type == ET_KOOPA)
         {
-            if (direction == 1 && (ytile.x + 1 < world.level.layer[2].t_cmapSize.x))
+            if (direction == 1 &&
+                (ytile.x + 1 < world.level.layer[2].t_cmapSize.x))
             {
-                if (!world.level.layer[2].collisionLayer[ytile.x + 1][ytile.y].isCollidable && position.x > bestYCollision.x)
+                if (!world.level.layer[2]
+                         .collisionLayer[ytile.x + 1][ytile.y]
+                         .isCollidable &&
+                    position.x > bestYCollision.x)
                 {
                     velocity.x *= -1;
                     direction = -1;
@@ -1538,7 +1650,10 @@ void Enemy::resolveTileCollisions(bool dynamic)
             }
             else if (direction == -1 && (ytile.x > 0))
             {
-                if (!world.level.layer[2].collisionLayer[ytile.x - 1][ytile.y].isCollidable && position.x < bestYCollision.x)
+                if (!world.level.layer[2]
+                         .collisionLayer[ytile.x - 1][ytile.y]
+                         .isCollidable &&
+                    position.x < bestYCollision.x)
                 {
                     velocity.x *= -1;
                     direction = 1;
@@ -1552,7 +1667,8 @@ void Enemy::resolveFrame(int elapsedFrames)
 {
     lastFrame = currentAtlasFrame;
 
-    if (velocity.y < 0) currentState = CS_FALLING;
+    if (velocity.y < 0)
+        currentState = CS_FALLING;
 
     int frame_y;
     int idle_frame;
@@ -1562,29 +1678,29 @@ void Enemy::resolveFrame(int elapsedFrames)
 
     switch (type)
     {
-    case ET_KOOPA:
-        frame_y = 3;
-        idle_frame = 1;
-        move_start_frame = 0;
-        move_end_frame = 1;
-        frameDelay = 80.0f;
-        break;
+        case ET_KOOPA:
+            frame_y = 3;
+            idle_frame = 1;
+            move_start_frame = 0;
+            move_end_frame = 1;
+            frameDelay = 80.0f;
+            break;
 
-    case ET_GOOMBA:
-        frame_y = 4;
-        idle_frame = 1;
-        move_start_frame = 0;
-        move_end_frame = 1;
-        frameDelay = 80.0f;
-        break;
+        case ET_GOOMBA:
+            frame_y = 4;
+            idle_frame = 1;
+            move_start_frame = 0;
+            move_end_frame = 1;
+            frameDelay = 80.0f;
+            break;
 
-    case ET_SHELL:
-        frame_y = 3;
-        idle_frame = 4;
-        move_start_frame = 2;
-        move_end_frame = 5;
-        frameDelay = 40.0f;
-        break;
+        case ET_SHELL:
+            frame_y = 3;
+            idle_frame = 4;
+            move_start_frame = 2;
+            move_end_frame = 5;
+            frameDelay = 40.0f;
+            break;
     }
 
     if (currentState == CS_IDLE)

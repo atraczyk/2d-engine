@@ -97,13 +97,20 @@ public:
   void
   update ()
   {
+    if (frames.empty () || delays.empty ())
+      return;
+
+    if (delays[currentAtlasFrame] == 0)
+      return;
+
     currentFrame++;
     if (currentFrame >= delays[currentAtlasFrame])
       {
         currentAtlasFrame++;
         if (currentAtlasFrame > frames.size () - 1)
-          currentAtlasFrame =
-            static_cast<unsigned char> (looped ? 0 : frames.size ()) - 1;
+          currentAtlasFrame = looped
+                                ? 0
+                                : static_cast<unsigned char> (frames.size () - 1);
         currentFrame = 0;
       }
   };

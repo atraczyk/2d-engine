@@ -192,6 +192,7 @@ void TileMap::update() {
       imageLayer[p.x][p.y].atileIndex = 0;
       imageLayer[p.x][p.y].tileIndex = 236;
       remove(animatedTiles, i);
+      i--;
     }
   }
 }

@@ -50,6 +50,14 @@ void World::loadLevel(const char* filename, Camera* camera)
                 switch (i)
                 {
                     case 0:
+                    {
+                        TileAtlas* farAtlas =
+                            (layerfile[1] == "null") ? &game.atlases.abgs
+                                                     : &game.atlases.bgs;
+                        level.layer[i].load(layerfile[i].c_str(), farAtlas,
+                                            camera);
+                        break;
+                    }
                     case 1:
                         level.layer[i].load(layerfile[i].c_str(),
                                             &game.atlases.bgs, camera);

@@ -389,6 +389,23 @@ void Game::initializeTextures()
     atlases.bgs.initialize(&textures.bgs, atlasInfo.bgs.framesWide,
                            atlasInfo.bgs.framesHigh, atlasInfo.bgs.frameWidth,
                            atlasInfo.bgs.frameHeight);
+    textures.abgs =
+        loadBMPTexture_ARGB(resolveResourcePath(atlasInfo.abgs.file).c_str());
+    if (!textures.abgs)
+    {
+        textures.abgs = textures.bgs;
+        atlases.abgs.initialize(&textures.abgs, atlasInfo.bgs.framesWide,
+                                atlasInfo.bgs.framesHigh,
+                                atlasInfo.bgs.frameWidth,
+                                atlasInfo.bgs.frameHeight);
+    }
+    else
+    {
+        atlases.abgs.initialize(&textures.abgs, atlasInfo.abgs.framesWide,
+                                atlasInfo.abgs.framesHigh,
+                                atlasInfo.abgs.frameWidth,
+                                atlasInfo.abgs.frameHeight);
+    }
 
     textures.font =
         loadBMPTexture_ARGB(resolveResourcePath("textures/font_8x8.bmp").c_str());
@@ -407,6 +424,7 @@ void Game::loadConfig(const char* filename)
     // Safe defaults if config is missing or malformed.
     atlasInfo.sprites = {"textures/sprite01.bmp", 32, 16, 16, 32};
     atlasInfo.tiles = {"textures/tiles03.bmp", 16, 16, 16, 16};
+    atlasInfo.abgs = {"textures/abg01.bmp", 2, 2, 512, 432};
     atlasInfo.bgs = {"textures/bg01.bmp", 2, 4, 512, 432};
 
     string line;
@@ -428,6 +446,15 @@ void Game::loadConfig(const char* filename)
         ssf >> info->file >> info->framesWide >> info->framesHigh >>
             info->frameWidth >> info->frameHeight;
         getline(file, line);
+        ssf = istringstream(line);
+        info = &atlasInfo.abgs;
+        ssf >> info->file >> info->framesWide >> info->framesHigh >>
+            info->frameWidth >> info->frameHeight;
+        if (!getline(file, line))
+        {
+            file.close();
+            return;
+        }
         ssf = istringstream(line);
         info = &atlasInfo.bgs;
         ssf >> info->file >> info->framesWide >> info->framesHigh >>

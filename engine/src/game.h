@@ -140,6 +140,7 @@ public:
   {
     AtlasInfo sprites;
     AtlasInfo tiles;
+    AtlasInfo abgs;
     AtlasInfo bgs;
   } atlasInfo;
 
